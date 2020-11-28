@@ -1,0 +1,10 @@
+﻿<Window x:Class="ComboBoxForWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="ComboBoxForWpf"
+        Title="MainWindow" Height="122" Width="221">
+
+    <Grid>
+        <ComboBox ItemsSource="{Binding Path=Prefectures}" x:Name="comboBox" Margin="12,12,61,49" />
+    </Grid>
+</Window>

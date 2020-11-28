@@ -1,0 +1,141 @@
+﻿<Window x:Class="ImageViewerForWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:ImageViewerForWpf"
+        Title="ImageViewer" Height="520" Width="880"
+        Loaded="WindowLoaded"
+        Closing="WindowClosing">
+
+    <Window.Resources>
+        <Style TargetType="StackPanel" x:Key="StackPanelInGroupBoxTemplate">
+            <Setter Property="Orientation" Value="Horizontal"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="0,10,0,0"/>
+        </Style>
+
+        <Style TargetType="GroupBox">
+            <Setter Property="Height" Value="80"/>
+            <Setter Property="Width" Value="120"/>
+            <Setter Property="Margin" Value="2,0,0,0"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Width" Value="30"/>
+        </Style>
+
+        <Style TargetType="Label">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Margin" Value="0,-5,0,0"/>
+        </Style>
+
+        <Style TargetType="TextBlock" x:Key="TextBlockTemplate">
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Margin" Value="0,0,5,0"/>
+        </Style>
+
+        <Style TargetType="Slider">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="IsSnapToTickEnabled" Value="True"/>
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Margin" Value="5,0,0,0"/>
+        </Style>
+
+        <Style TargetType="ListBox">
+            <Setter Property="MinHeight" Value="80"/>
+            <Setter Property="Height" Value="Auto"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="SelectionMode" Value="Single"/>
+        </Style>
+
+        <!--Converterメソッド-->
+        <local:ImageConverter x:Key="ImageConverter"/>
+        <local:ThumnailSizeNameConverter x:Key="ThumnailSizeNameConverter"/>
+        <local:ThumnailSizeWidthConverter x:Key="ThumnailSizeWidthConverter"/>
+        <local:ThumnailSizeHeightConverter x:Key="ThumnailSizeHeightConverter"/>
+    </Window.Resources>
+
+    <DockPanel>
+        <!--Imageコントロールの画像が上に張り付く
+        <StackPanel Orientation="Vertical">-->
+        <StackPanel Orientation=" Horizontal" DockPanel.Dock="Top" >
+            <GroupBox Header="操作" Width="50" DockPanel.Dock="Left">
+                <StackPanel Orientation="Vertical" Style="{StaticResource StackPanelInGroupBoxTemplate}" >
+                    <Button Name="ButtonOpenDialog" Content="開く" Click="ButtonOpenDialog_Click"/>
+                    <Button Name="ButtonFormOpenDialog" Content="開く" Click="ButtonFormOpenDialog_Click"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="サムネイルのサイズ" DockPanel.Dock="Left" >
+                <StackPanel Style="{StaticResource StackPanelInGroupBoxTemplate}" >
+                    <TextBlock Text="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumnailSizeNameConverter}}"/>
+                    <Slider Name="SliderThumbnail" 
+                        Minimum="1" Maximum="3" TickFrequency="1" SmallChange="1" LargeChange="1" Value="2"
+                        TickPlacement="BottomRight"/>
+                </StackPanel>
+            </GroupBox>
+            <!--TODO：マウスホイールで拡大/縮小したい-->
+            <GroupBox Header="拡大/縮小" DockPanel.Dock="Left" >
+                <StackPanel Style="{StaticResource StackPanelInGroupBoxTemplate}" >
+                    <TextBlock Text="{Binding ElementName=SliderScale, Path=Value, StringFormat={}{0:0.0} 倍:}" Style="{StaticResource TextBlockTemplate}" />
+                    <Slider Name="SliderScale"
+                        Minimum="0.1" Maximum="5.0" TickFrequency="0.1" SmallChange="0.1" LargeChange="1.0" Value="1.0"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="回転" DockPanel.Dock="Left" >
+                <StackPanel Style="{StaticResource StackPanelInGroupBoxTemplate}" >
+                    <!--Labelだと、StringFormatでうまく文字が表示できない
+                    <Label Content="{Binding ElementName=SliderAngle, Path=Value, StringFormat={0:0000}}" />-->
+                    <TextBlock Text="{Binding ElementName=SliderAngle, Path=Value, StringFormat={}{0:000} 度:}" Style="{StaticResource TextBlockTemplate}" />
+                    <Slider Name="SliderAngle"
+                        Minimum="0" Maximum="360" TickFrequency="1" SmallChange="1" LargeChange="90" Value="0"/>
+                </StackPanel>
+            </GroupBox>
+
+            <!--TODO：ウィンドウ右端に吸着しない-->
+            <GroupBox Header="ファイル" Width="450" DockPanel.Dock="Right">
+                <StackPanel Orientation="Vertical" Style="{StaticResource StackPanelInGroupBoxTemplate}" >
+                    <!--テキストボックスの値を変更されるとサムネイルが不正動作するのでReadOnlyにする-->
+                    <TextBox Name="TextDirName" IsReadOnly="True"/>
+                    <TextBox Name="TextFileName" Text="{Binding ElementName=ListBoxTumnail, Path=SelectedItem.FileName}" IsReadOnly="True"/>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+
+        <ListBox x:Name="ListBoxTumnail" DockPanel.Dock="Top" ItemsSource="{Binding}">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <!--サムネイルを横に並べる-->
+                    <WrapPanel Orientation="Horizontal"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+
+                    <!--Memo：WrapPanelのOrienataionがVerticalの場合、StackPanelのOrienataionをHorizontalにしないと、ファイル名が表示されない-->
+                    <StackPanel>
+                        <Image Stretch="Fill"
+                               Source="{Binding FileFullpath, Converter={StaticResource ImageConverter}}"
+                               Width="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumnailSizeWidthConverter}}"
+                               Height="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumnailSizeHeightConverter}}"/>
+                        <TextBlock Text="{Binding FileName}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!--<StackPanel Orientation="Vertical">を設定していると、スクロールバーが常にDisableになる-->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <!--「Stretch="None"」にしないとScalingが効かない-->
+            <Image Name="ImageView" Stretch="None" Source="{Binding ElementName=ListBoxTumnail, Path=SelectedItem.FileFullpath}" >
+                <Image.LayoutTransform>
+                    <TransformGroup>
+                        <RotateTransform Angle="{Binding ElementName=SliderAngle, Path=Value}"/>
+                        <ScaleTransform ScaleX="{Binding ElementName=SliderScale, Path=Value}" ScaleY="{Binding ElementName=SliderScale, Path=Value}"/>
+                    </TransformGroup>
+                </Image.LayoutTransform>
+            </Image>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

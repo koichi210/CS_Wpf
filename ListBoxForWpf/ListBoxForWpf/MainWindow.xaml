@@ -1,0 +1,8 @@
+﻿<Window x:Class="ListBoxForWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <ListBox ItemsSource="{Binding Path=Prefectures}" x:Name="listBox" Width="120" Margin="12,12,370,84" />
+    </Grid>
+</Window>

@@ -1,0 +1,25 @@
+﻿<Window x:Class="EventForWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+
+    <Grid>
+        <StackPanel Orientation="Horizontal">
+            <Button x:Name="AButton"
+                        Content="ClickME"
+                        Height="100"
+                        FontSize="40"
+                        Click="Button_Click"/>
+            <Button x:Name="Button"
+                        Content="ClickYOU"
+                        Height="100"
+                        FontSize="40"
+                        Click="Button_Click"/>
+            <Button x:Name="Cutton"
+                        Content="ClickHE"
+                        Height="100"
+                        FontSize="40"
+                        Click="Button_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

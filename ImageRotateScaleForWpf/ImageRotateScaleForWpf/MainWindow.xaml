@@ -1,0 +1,47 @@
+﻿<Window x:Class="ImageRotateScaleForWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="800">
+    <Grid>
+        <Rectangle Fill="LightSeaGreen" Stroke="Beige" Width="100" Height="100" RenderTransformOrigin="0.5,0.5" Margin="64,34,614,177">
+            <Rectangle.RenderTransform>
+                <RotateTransform Angle="45" />
+            </Rectangle.RenderTransform>
+        </Rectangle>
+
+        <Rectangle Fill="LightSeaGreen" Stroke="Beige" Width="100" Height="100" Margin="89,154,589,57">
+            <Rectangle.RenderTransform>
+                <RotateTransform Angle="45" />
+            </Rectangle.RenderTransform>
+        </Rectangle>
+
+        <Rectangle Fill="LightCoral" Stroke="Beige" Width="100" Height="100"  Margin="256,20,422,191">
+            <Rectangle.RenderTransform>
+                <ScaleTransform ScaleX="0.5" ScaleY="0.5"/>
+            </Rectangle.RenderTransform>
+        </Rectangle>
+
+        <Rectangle Fill="LightCoral" Stroke="Beige" Width="100" Height="100"  Margin="256,90,422,121">
+            <Rectangle.RenderTransform>
+                <ScaleTransform ScaleX="2" ScaleY="2"/>
+            </Rectangle.RenderTransform>
+        </Rectangle>
+        <Rectangle Fill="LightYellow" Height="100" Margin="541,19,137,192" Stroke="Beige" Width="100">
+            <Rectangle.RenderTransform>
+                <TransformGroup>
+                    <RotateTransform Angle="45" />
+                    <ScaleTransform ScaleX="0.5" ScaleY="0.5" />
+                </TransformGroup>
+            </Rectangle.RenderTransform>
+        </Rectangle>
+        <Rectangle Fill="LightYellow" Height="100" Margin="610,79,68,132" Stroke="Beige" Width="100">
+            <Rectangle.RenderTransform>
+                <!--複数のTransFormを設定する場合は「TransformGroup」を使用する-->
+                <TransformGroup>
+                    <RotateTransform Angle="45" />
+                    <ScaleTransform ScaleX="2" ScaleY="1.5" />
+                </TransformGroup>
+            </Rectangle.RenderTransform>
+        </Rectangle>
+    </Grid>
+</Window>

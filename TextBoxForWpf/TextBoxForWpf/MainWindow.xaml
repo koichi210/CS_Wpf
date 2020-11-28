@@ -1,0 +1,13 @@
+﻿<Window x:Class="TextBoxForWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:TextBoxForWpf"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+
+        <TextBox Margin="12,12,311,248" Text="{Binding Path=txt1}" x:Name="textBox1" />
+        <TextBox Margin="12,88,311,172" Text="{Binding Path=txt2}" x:Name="textBox2" />
+        <TextBox Margin="12,158,311,102" Text="{Binding Path=txt3}" x:Name="textBox3" />
+        <TextBox Margin="229,12,94,248" Name="textBox4" />
+    </Grid>
+</Window>

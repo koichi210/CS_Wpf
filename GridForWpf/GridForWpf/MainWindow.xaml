@@ -1,0 +1,34 @@
+﻿<Window x:Class="GridForWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+
+    <Grid ShowGridLines="True" >
+        
+        <!--Row=縦方向の分割数-->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50"/>
+            <RowDefinition  Height="Auto"/>
+            <RowDefinition Height="100"/>
+            <RowDefinition Height="80"/>
+            <!-- *を指定すると均等に割り当てられる-->
+            <!--<RowDefinition  Height="*"/>-->
+        </Grid.RowDefinitions>
+
+        <!--Column=横方向の分割数-->
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <Button Grid.Row="0" Grid.Column="0" Content="Button"/>
+        <Label Grid.Row="0" Grid.Column="1" Content="Label"/>
+        <ListBox Grid.Row="2" Grid.Column="0"/>
+        <TabControl Grid.Row="2" Grid.Column="1">
+            <TabItem Header="tabItem1" Name="tabItem1">
+                <Grid />
+            </TabItem>
+        </TabControl>
+    </Grid>
+    
+</Window>

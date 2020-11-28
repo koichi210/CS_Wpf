@@ -1,0 +1,32 @@
+﻿<Window x:Class="DataGridForWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:DataGridForWpf"
+        Title="MainWindow" Height="276" Width="525">
+
+    <!--Resourcesで定義しておくことで、スタイルを流用できる-->
+    <Window.Resources>
+        <Style TargetType="DataGrid" x:Key="DataGridTemplate">
+            <Setter Property="Height" Value="200"/>
+            <Setter Property="Width" Value="217"/>
+            <Setter Property="Margin" Value="250,12,0,0"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <!--直接定義-->
+        <DataGrid
+            x:Name="dataGrid1"
+            Height="200"
+            Width="217"
+            Margin="12,12,0,0"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Left"
+            ItemsSource="{Binding Path=ExaminationResult}" />
+
+        <!--Resouceでてプレートを定義-->
+        <DataGrid x:Name="dataGrid2" Style="{StaticResource DataGridTemplate}" ItemsSource="{Binding Path=ExaminationResult}"/>
+    </Grid>
+</Window>
