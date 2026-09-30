@@ -64,3 +64,19 @@ Mkfile.old
 dkms.conf
 *.manifest
 *.vshost.exe
+
+obj
+*.exe.config
+
+# ビルド出力（Debug構成は丸ごと無視。Release配下のexeはあえてコミットしている）
+**/bin/Debug/
+
+# ツールの設定プリセット（実行するたびに増えるユーザーデータなのでコミットしない）
+**/bin/Release/*.xml
+
+# UserDataLocation([[_Common/UserDataLocation.cs]])が生成する案内板ファイル。
+# 実データは%LOCALAPPDATA%配下にあり、これは各PC固有のポインタなのでコミットしない
+**/DataFolder.txt
+
+# テストプロジェクトのビルド出力（CS_Formと同じく、アプリ本体のRelease exeだけコミットする）
+**/Tests/**/bin/
