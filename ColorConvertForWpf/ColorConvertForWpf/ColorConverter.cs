@@ -10,11 +10,11 @@ namespace ColorConvertForWpf
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             // object 型の配列にはバインドした順でデータが入ってくる
-            byte R = (byte)(double)(values[0]);
-            byte G = (byte)(double)(values[1]);
-            byte B = (byte)(double)(values[2]);
+            byte red = (byte)(double)(values[0]);
+            byte green = (byte)(double)(values[1]);
+            byte blue = (byte)(double)(values[2]);
 
-            return Color.FromRgb(R, G, B);
+            return Color.FromRgb(red, green, blue);
             //return Color.FromRgb((byte)(double)(values[0]), (byte)(double)(values[1]), (byte)(double)(values[2]));
         }
 

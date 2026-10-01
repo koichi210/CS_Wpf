@@ -5,7 +5,7 @@
         Title="ColorConvertForWpf" Height="223" Width="353">
 
     <Window.Resources>
-        <!--Merginは、左・上・右・下 の順-->
+        <!--Marginは、左・上・右・下 の順-->
         <Style TargetType="StackPanel" x:Key="StackPanelHorizontalTemplate">
             <Setter Property="Orientation" Value="Horizontal"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
