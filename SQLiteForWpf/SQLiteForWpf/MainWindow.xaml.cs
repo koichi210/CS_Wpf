@@ -12,14 +12,13 @@ namespace SQLiteForWpf
     public partial class MainWindow : Window
     {
         private readonly String databaseName = "SqLiteSample.db";
-        private String DatabasePath = "";
+        private readonly String databasePath;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            String folderPath = AppDomain.CurrentDomain.BaseDirectory;
-            DatabasePath = Path.Combine(folderPath, databaseName);
+            databasePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, databaseName);
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -32,7 +31,7 @@ namespace SQLiteForWpf
             };
 
             // sqlite3のDLLが読み込めずうまく動かない
-            using (var connection = new SQLiteConnection(DatabasePath))
+            using (var connection = new SQLiteConnection(databasePath))
             {
                 connection.CreateTable<Customer>();
                 connection.Insert(customer);
@@ -42,7 +41,7 @@ namespace SQLiteForWpf
         private void ReadButton_Click(object sender, RoutedEventArgs e)
         {
             // sqlite3のDLLが読み込めずうまく動かない
-            //using (var connection = new SQLiteConnection(DatabasePath))
+            //using (var connection = new SQLiteConnection(databasePath))
             //{
             //    connection.CreateTable<Customer>();
             //    var customers = connection.Table<Customer>().ToList();
