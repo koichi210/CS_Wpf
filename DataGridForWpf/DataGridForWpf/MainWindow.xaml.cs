@@ -33,7 +33,7 @@ namespace DataGridForWpf
         public ExaminationList()
         {
             ExaminationResult = new ObservableCollection<Examination> {
-                new Examination { Subject="Mathematics", Point=90, UserName="Jeams", ClassName="A" },
+                new Examination { Subject="Mathematics", Point=90, UserName="James", ClassName="A" },
                 new Examination { Subject="National language", Point=50, UserName="Melinda", ClassName="B" },
                 new Examination { Subject="Society", Point=70, UserName="Adam", ClassName="B" },
                 new Examination { Subject="Mathematics", Point=80, UserName="Jemmy", ClassName="C" }
