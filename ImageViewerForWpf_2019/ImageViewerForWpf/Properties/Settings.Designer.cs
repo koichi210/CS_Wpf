@@ -86,12 +86,12 @@ namespace ImageViewerForWpf.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("C:\\tmp")]
-        public string ThumnailDirPath {
+        public string ThumbnailDirPath {
             get {
-                return ((string)(this["ThumnailDirPath"]));
+                return ((string)(this["ThumbnailDirPath"]));
             }
             set {
-                this["ThumnailDirPath"] = value;
+                this["ThumbnailDirPath"] = value;
             }
         }
     }

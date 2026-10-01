@@ -17,7 +17,7 @@
     <Setting Name="ScreenTop" Type="System.Double" Scope="User">
       <Value Profile="(Default)">200</Value>
     </Setting>
-    <Setting Name="ThumnailDirPath" Type="System.String" Scope="User">
+    <Setting Name="ThumbnailDirPath" Type="System.String" Scope="User">
       <Value Profile="(Default)">C:\tmp</Value>
     </Setting>
   </Settings>
