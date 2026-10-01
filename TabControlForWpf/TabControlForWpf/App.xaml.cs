@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace TabControl
+namespace TabControlForWpf
 {
     /// <summary>
     /// App.xaml の相互作用ロジック

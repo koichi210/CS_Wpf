@@ -8,8 +8,8 @@
     <ProjectGuid>{C2F8A46F-8A20-44BD-8637-CBE0CB8A1067}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TabControlForXaml</RootNamespace>
-    <AssemblyName>TabControlForXaml</AssemblyName>
+    <RootNamespace>TabControlForWpf</RootNamespace>
+    <AssemblyName>TabControlForWpf</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>

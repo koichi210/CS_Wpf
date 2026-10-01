@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 
-namespace TabControl
+namespace TabControlForWpf
 {
     /// <summary>
     /// MainWindow.xaml の相互作用ロジック

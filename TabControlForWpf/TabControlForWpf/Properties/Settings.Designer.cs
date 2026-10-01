@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace TabControl.Properties
+namespace TabControlForWpf.Properties
 {
 
 
