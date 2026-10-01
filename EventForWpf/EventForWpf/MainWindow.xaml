@@ -5,17 +5,17 @@
 
     <Grid>
         <StackPanel Orientation="Horizontal">
-            <Button x:Name="AButton"
+            <Button x:Name="button_ClickMe"
                         Content="ClickME"
                         Height="100"
                         FontSize="40"
                         Click="Button_Click"/>
-            <Button x:Name="Button"
+            <Button x:Name="button_ClickYou"
                         Content="ClickYOU"
                         Height="100"
                         FontSize="40"
                         Click="Button_Click"/>
-            <Button x:Name="Cutton"
+            <Button x:Name="button_ClickHe"
                         Content="ClickHE"
                         Height="100"
                         FontSize="40"
