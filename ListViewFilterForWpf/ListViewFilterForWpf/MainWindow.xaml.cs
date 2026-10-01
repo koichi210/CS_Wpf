@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Collections.ObjectModel;
 
 namespace ListViewFilterForWpf
@@ -20,8 +10,8 @@ namespace ListViewFilterForWpf
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ObservableCollection<Examination> m_examinations = new ObservableCollection<Examination>();
-        private int m_regist_num = 0;
+        private readonly ObservableCollection<Examination> m_examinations = new ObservableCollection<Examination>();
+        private int m_registeredCount = 0;
         
         public MainWindow()
         {
@@ -29,19 +19,19 @@ namespace ListViewFilterForWpf
 
             for (int i = 0; i < 15; i++)
             {
-                AddList();
+                AddExamination();
             }
             CustomerListView.ItemsSource = m_examinations;
         }
 
-        private void AddList()
+        private void AddExamination()
         {
-            m_examinations.Add(new Examination { Id = ++m_regist_num, Subject = "Subject" + m_regist_num, Point = 0, UserName = "UserName" + m_regist_num });
+            m_examinations.Add(new Examination { Id = ++m_registeredCount, Subject = "Subject" + m_registeredCount, Point = 0, UserName = "UserName" + m_registeredCount });
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
         {
-            AddList();
+            AddExamination();
 
             // リストを更新するとフィルタが無効になる
             //CustomerListView.ItemsSource = _customers;
