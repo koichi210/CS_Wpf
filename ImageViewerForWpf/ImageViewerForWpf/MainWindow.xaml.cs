@@ -50,7 +50,7 @@ namespace ImageViewerForWpf
             //this.Top = Properties.Settings.Default.ScreenTop;
             //this.Width = Properties.Settings.Default.ScreenWidth;
             //this.Height = Properties.Settings.Default.ScreenHeight;
-            //TextDirName.Text = Properties.Settings.Default.ThumnailDirPath;
+            //TextDirName.Text = Properties.Settings.Default.ThumbnailDirPath;
             //TextFileName.Text = Properties.Settings.Default.TextFileName;
         }
 
@@ -60,7 +60,7 @@ namespace ImageViewerForWpf
             //Properties.Settings.Default.ScreenTop = this.Top;
             //Properties.Settings.Default.ScreenWidth = this.Width;
             //Properties.Settings.Default.ScreenHeight = this.Height;
-            //Properties.Settings.Default.ThumnailDirPath = TextDirName.Text;
+            //Properties.Settings.Default.ThumbnailDirPath = TextDirName.Text;
             //Properties.Settings.Default.TextFileName = TextFileName.Text;
 
             //Properties.Settings.Default.Save();
@@ -148,13 +148,13 @@ namespace ImageViewerForWpf
             }
 
             // クラスをローカル変数にしたので、クリア処理は不要
-            //if (ListBoxTumnail.Items.Count != 0)
+            //if (ListBoxThumbnail.Items.Count != 0)
             //{
             //    Exception
-            //    ListBoxTumnail.Items.Clear();
+            //    ListBoxThumbnail.Items.Clear();
 
             //    Never displayed
-            //    ListBoxTumnail.ClearValue(ListBox.ItemsSourceProperty);
+            //    ListBoxThumbnail.ClearValue(ListBox.ItemsSourceProperty);
             //}
 
             var thumbnails = new List<Thumbnail>();

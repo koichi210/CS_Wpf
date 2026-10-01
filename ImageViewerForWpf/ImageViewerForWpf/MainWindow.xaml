@@ -97,12 +97,12 @@
                 <StackPanel Orientation="Vertical" Style="{StaticResource StackPanelInGroupBoxTemplate}" >
                     <!--テキストボックスの値を変更されるとサムネイルが不正動作するのでReadOnlyにする-->
                     <TextBox Name="TextDirName" IsReadOnly="True"/>
-                    <TextBox Name="TextFileName" Text="{Binding ElementName=ListBoxTumnail, Path=SelectedItem.FileName}" IsReadOnly="True"/>
+                    <TextBox Name="TextFileName" Text="{Binding ElementName=ListBoxThumbnail, Path=SelectedItem.FileName}" IsReadOnly="True"/>
                 </StackPanel>
             </GroupBox>
         </StackPanel>
 
-        <ListBox x:Name="ListBoxTumnail" DockPanel.Dock="Top" ItemsSource="{Binding}">
+        <ListBox x:Name="ListBoxThumbnail" DockPanel.Dock="Top" ItemsSource="{Binding}">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <!--サムネイルを横に並べる-->
@@ -113,7 +113,7 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
 
-                    <!--Memo：WrapPanelのOrienataionがVerticalの場合、StackPanelのOrienataionをHorizontalにしないと、ファイル名が表示されない-->
+                    <!--Memo：WrapPanelのOrientationがVerticalの場合、StackPanelのOrientationをHorizontalにしないと、ファイル名が表示されない-->
                     <StackPanel>
                         <Image Stretch="Fill"
                                Source="{Binding FileFullpath, Converter={StaticResource ImageConverter}}"
@@ -128,7 +128,7 @@
         <!--<StackPanel Orientation="Vertical">を設定していると、スクロールバーが常にDisableになる-->
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <!--「Stretch="None"」にしないとScalingが効かない-->
-            <Image Name="ImageView" Stretch="None" Source="{Binding ElementName=ListBoxTumnail, Path=SelectedItem.FileFullpath}" >
+            <Image Name="ImageView" Stretch="None" Source="{Binding ElementName=ListBoxThumbnail, Path=SelectedItem.FileFullpath}" >
                 <Image.LayoutTransform>
                     <TransformGroup>
                         <RotateTransform Angle="{Binding ElementName=SliderAngle, Path=Value}"/>
