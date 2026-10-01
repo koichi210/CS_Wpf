@@ -1,16 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿using System.Windows;
 
 namespace SaveRestoreForWpf
 {
@@ -22,23 +10,23 @@ namespace SaveRestoreForWpf
         public MainWindow()
         {
             InitializeComponent();
-            LoadSetting();
+            LoadSettings();
         }
 
         // xamlのClosingで定義したメソッド。ウィンドウ閉じるときに呼ばれる
         private void WindowClosing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            SaveSetting();
+            SaveSettings();
         }
 
         private void buttonSave_Click(object sender, RoutedEventArgs e)
         {
-            SaveSetting();
+            SaveSettings();
         }
 
         private void buttonLoad_Click(object sender, RoutedEventArgs e)
         {
-            LoadSetting();
+            LoadSettings();
         }
 
         private void buttonReset_Click(object sender, RoutedEventArgs e)
@@ -47,22 +35,19 @@ namespace SaveRestoreForWpf
             Properties.Settings.Default.Reset();
         }
 
-        private void LoadSetting()
+        private void LoadSettings()
         {
-            //  設定をロード。不要（？）
-            //Properties.Settings.Default.Reload();
-
             // 画面サイズ
             this.Left = Properties.Settings.Default.ScreenLeft;
             this.Top = Properties.Settings.Default.ScreenTop;
             this.Width = Properties.Settings.Default.ScreenWidth;
             this.Height = Properties.Settings.Default.ScreenHeight;
-            
+
             // 設定値をコントロールに配置
             textBoxPath.Text = Properties.Settings.Default.textBoxPath;
         }
 
-        private void SaveSetting()
+        private void SaveSettings()
         {
             // Default設定を変更
             Properties.Settings.Default.ScreenLeft = this.Left;
