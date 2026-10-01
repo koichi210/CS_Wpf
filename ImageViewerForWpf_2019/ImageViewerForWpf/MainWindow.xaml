@@ -54,9 +54,9 @@
 
         <!--Converterメソッド-->
         <local:ImageConverter x:Key="ImageConverter"/>
-        <local:ThumnailSizeNameConverter x:Key="ThumnailSizeNameConverter"/>
-        <local:ThumnailSizeWidthConverter x:Key="ThumnailSizeWidthConverter"/>
-        <local:ThumnailSizeHeightConverter x:Key="ThumnailSizeHeightConverter"/>
+        <local:ThumbnailSizeNameConverter x:Key="ThumbnailSizeNameConverter"/>
+        <local:ThumbnailSizeWidthConverter x:Key="ThumbnailSizeWidthConverter"/>
+        <local:ThumbnailSizeHeightConverter x:Key="ThumbnailSizeHeightConverter"/>
     </Window.Resources>
 
     <DockPanel>
@@ -71,7 +71,7 @@
             </GroupBox>
             <GroupBox Header="サムネイルのサイズ" DockPanel.Dock="Left" >
                 <StackPanel Style="{StaticResource StackPanelInGroupBoxTemplate}" >
-                    <TextBlock Text="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumnailSizeNameConverter}}"/>
+                    <TextBlock Text="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumbnailSizeNameConverter}}"/>
                     <Slider Name="SliderThumbnail" 
                         Minimum="1" Maximum="3" TickFrequency="1" SmallChange="1" LargeChange="1" Value="2"
                         TickPlacement="BottomRight"/>
@@ -120,8 +120,8 @@
                     <StackPanel>
                         <Image Stretch="Fill"
                                Source="{Binding FileFullpath, Converter={StaticResource ImageConverter}}"
-                               Width="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumnailSizeWidthConverter}}"
-                               Height="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumnailSizeHeightConverter}}"/>
+                               Width="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumbnailSizeWidthConverter}}"
+                               Height="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumbnailSizeHeightConverter}}"/>
                         <TextBlock Text="{Binding FileName}"/>
                     </StackPanel>
                 </DataTemplate>

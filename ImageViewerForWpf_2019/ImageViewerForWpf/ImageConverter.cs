@@ -7,14 +7,14 @@ namespace ImageViewerForWpf
 {
     public class ImageConverter : IValueConverter
     {
-        private readonly int m_ThumailDecodePixelWidth = 50;
+        private readonly int m_ThumbnailDecodePixelWidth = 50;
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             // リソースを握ったままになる
             //var img = new BitmapImage();
             //img.BeginInit();
             //img.UriSource = new Uri(value.ToString());
-            //img.DecodePixelWidth = m_ThumailDecodePixelWidth;
+            //img.DecodePixelWidth = m_ThumbnailDecodePixelWidth;
             //img.EndInit();
             //return img;
 
@@ -29,7 +29,7 @@ namespace ImageViewerForWpf
             var img = new BitmapImage();
             FileStream stream = File.OpenRead(value.ToString());
             img.BeginInit();
-            img.DecodePixelWidth = m_ThumailDecodePixelWidth;
+            img.DecodePixelWidth = m_ThumbnailDecodePixelWidth;
             img.CacheOption = BitmapCacheOption.OnLoad;
             img.StreamSource = stream;
             img.EndInit();
