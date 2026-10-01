@@ -12,7 +12,7 @@ namespace ListViewFilterForWpf
 
         public override String ToString()
         {
-            return "${Id} - ${Subject} - ${Point} - ${UserName} - ${ClassName}";
+            return $"{Id} - {Subject} - {Point} - {UserName} - {ClassName}";
         }
     }
 }
