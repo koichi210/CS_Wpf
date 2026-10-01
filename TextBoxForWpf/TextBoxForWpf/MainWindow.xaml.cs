@@ -1,17 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Collections.ObjectModel;
 
 namespace TextBoxForWpf
 {
@@ -20,18 +8,15 @@ namespace TextBoxForWpf
     /// </summary>
     public partial class MainWindow : Window
     {
-        public String text { get; set; }
-
-
         public MainWindow()
         {
             InitializeComponent();
-            TextString1 ts1 = new TextString1();
-            ts1.txt1 = "Hello World";
-            textBox1.DataContext = ts1;
+            TextString1 textString1 = new TextString1();
+            textString1.txt1 = "Hello World";
+            textBox1.DataContext = textString1;
 
-            TextString2 ts2 = new TextString2();
-            textBox2.DataContext = ts2;
+            TextString2 textString2 = new TextString2();
+            textBox2.DataContext = textString2;
 
             textBox3.DataContext = new TextString3();
 
