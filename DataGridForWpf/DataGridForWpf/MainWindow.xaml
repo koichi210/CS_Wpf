@@ -26,7 +26,7 @@
             HorizontalAlignment="Left"
             ItemsSource="{Binding Path=ExaminationResult}" />
 
-        <!--Resouceでてプレートを定義-->
+        <!--Resourceでテンプレートを定義-->
         <DataGrid x:Name="dataGrid2" Style="{StaticResource DataGridTemplate}" ItemsSource="{Binding Path=ExaminationResult}"/>
     </Grid>
 </Window>
