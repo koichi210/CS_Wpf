@@ -56,8 +56,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Thumnail.cs" />
-    <Compile Include="ThumnailSizeConverter.cs" />
+    <Compile Include="Thumbnail.cs" />
+    <Compile Include="ThumbnailSizeConverter.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
