@@ -5,7 +5,7 @@ using System.Globalization;
 
 namespace ColorConvertForWpf
 {
-    public class ColorConverter : IMultiValueConverter
+    public class RgbToColorConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {

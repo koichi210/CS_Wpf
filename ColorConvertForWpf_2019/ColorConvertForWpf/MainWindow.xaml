@@ -43,8 +43,8 @@
             <Setter Property="TickFrequency" Value="20"/>
         </Style>
 
-        <!--ColorConverter はColorConvertForWpfのpublicクラス-->
-        <local:ColorConverter x:Key="ColorConvert" />
+        <!--RgbToColorConverter はColorConvertForWpfのpublicクラス-->
+        <local:RgbToColorConverter x:Key="RgbToColorConverter" />
     </Window.Resources>
 
     <Grid RenderTransformOrigin="0,0" Margin="0,0,18,8">
@@ -75,7 +75,7 @@
                     <Rectangle.Fill>
                         <SolidColorBrush>
                             <SolidColorBrush.Color>
-                                <MultiBinding Converter="{StaticResource ColorConvert}">
+                                <MultiBinding Converter="{StaticResource RgbToColorConverter}">
                                     <MultiBinding.Bindings>
                                         <Binding ElementName="ColorSliderRed" Path="Value" />
                                         <Binding ElementName="ColorSliderGreen" Path="Value" />
