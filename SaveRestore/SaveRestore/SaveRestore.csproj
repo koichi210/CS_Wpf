@@ -67,6 +67,9 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="..\..\_Common\Wpf\WpfPlaceholder.cs">
+      <Link>_Common\Wpf\WpfPlaceholder.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">

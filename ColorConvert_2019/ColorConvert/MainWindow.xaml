@@ -1,6 +1,7 @@
 ﻿<Window x:Class="ColorConvert.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:stw="clr-namespace:StandardTemplate.Wpf"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ColorConvert"
@@ -51,21 +52,21 @@
         <StackPanel Orientation="Vertical" Margin="0,0,-16,-8">
             <StackPanel Style="{StaticResource StackPanelHorizontalTemplate}">
                 <Label x:Name="ColorNameRed" Content="Color Red:"  Style="{StaticResource LabelTemplate}"/>
-                <TextBox Name="ColorValueRed" Style="{StaticResource TextBoxTemplate}"
+                <TextBox Name="ColorValueRed" stw:Placeholder.Text="例: 128" Style="{StaticResource TextBoxTemplate}"
                          Text="{Binding ElementName=ColorSliderRed, Path=Value}"/>
                 <Slider Name="ColorSliderRed" Style="{StaticResource SliderTemplate}" />
             </StackPanel>
 
             <StackPanel Style="{StaticResource StackPanelHorizontalTemplate}">
                 <Label x:Name="ColorNameGreen" Content="Color Green:"  Style="{StaticResource LabelTemplate}"/>
-                <TextBox Name="ColorValueGreen" Style="{StaticResource TextBoxTemplate}"
+                <TextBox Name="ColorValueGreen" stw:Placeholder.Text="例: 128" Style="{StaticResource TextBoxTemplate}"
                          Text="{Binding ElementName=ColorSliderGreen, Path=Value}"/>
                 <Slider Name="ColorSliderGreen" Style="{StaticResource SliderTemplate}" />
             </StackPanel>
 
             <StackPanel Style="{StaticResource StackPanelHorizontalTemplate}">
                 <Label x:Name="ColorNameBlue" Content="Color Blue:"  Style="{StaticResource LabelTemplate}"/>
-                <TextBox Name="ColorValueBlue" Style="{StaticResource TextBoxTemplate}"
+                <TextBox Name="ColorValueBlue" stw:Placeholder.Text="例: 128" Style="{StaticResource TextBoxTemplate}"
                          Text="{Binding ElementName=ColorSliderBlue, Path=Value}"/>
                 <Slider Name="ColorSliderBlue" Style="{StaticResource SliderTemplate}" />
             </StackPanel>
