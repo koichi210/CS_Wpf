@@ -52,23 +52,23 @@
         <StackPanel Orientation="Vertical" Margin="0,0,-16,-8">
             <StackPanel Style="{StaticResource StackPanelHorizontalTemplate}">
                 <Label x:Name="ColorNameRed" Content="Color Red:"  Style="{StaticResource LabelTemplate}"/>
-                <TextBox Name="ColorValueRed" stw:Placeholder.Text="例: 128" Style="{StaticResource TextBoxTemplate}"
+                <TextBox Name="ColorValueRed" ToolTip="0〜255の値。入力後にフォーカスを外すとスライダーと下の色見本に反映される" stw:Placeholder.Text="例: 128" Style="{StaticResource TextBoxTemplate}"
                          Text="{Binding ElementName=ColorSliderRed, Path=Value}"/>
-                <Slider Name="ColorSliderRed" Style="{StaticResource SliderTemplate}" />
+                <Slider Name="ColorSliderRed" ToolTip="0〜255で調整する。ドラッグや矢印キーでは目盛り(20刻み)と255の位置にだけ止まるので、中間の値は左の欄に直接入力する" Style="{StaticResource SliderTemplate}" />
             </StackPanel>
 
             <StackPanel Style="{StaticResource StackPanelHorizontalTemplate}">
                 <Label x:Name="ColorNameGreen" Content="Color Green:"  Style="{StaticResource LabelTemplate}"/>
-                <TextBox Name="ColorValueGreen" stw:Placeholder.Text="例: 128" Style="{StaticResource TextBoxTemplate}"
+                <TextBox Name="ColorValueGreen" ToolTip="0〜255の値。入力後にフォーカスを外すとスライダーと下の色見本に反映される" stw:Placeholder.Text="例: 128" Style="{StaticResource TextBoxTemplate}"
                          Text="{Binding ElementName=ColorSliderGreen, Path=Value}"/>
-                <Slider Name="ColorSliderGreen" Style="{StaticResource SliderTemplate}" />
+                <Slider Name="ColorSliderGreen" ToolTip="0〜255で調整する。ドラッグや矢印キーでは目盛り(20刻み)と255の位置にだけ止まるので、中間の値は左の欄に直接入力する" Style="{StaticResource SliderTemplate}" />
             </StackPanel>
 
             <StackPanel Style="{StaticResource StackPanelHorizontalTemplate}">
                 <Label x:Name="ColorNameBlue" Content="Color Blue:"  Style="{StaticResource LabelTemplate}"/>
-                <TextBox Name="ColorValueBlue" stw:Placeholder.Text="例: 128" Style="{StaticResource TextBoxTemplate}"
+                <TextBox Name="ColorValueBlue" ToolTip="0〜255の値。入力後にフォーカスを外すとスライダーと下の色見本に反映される" stw:Placeholder.Text="例: 128" Style="{StaticResource TextBoxTemplate}"
                          Text="{Binding ElementName=ColorSliderBlue, Path=Value}"/>
-                <Slider Name="ColorSliderBlue" Style="{StaticResource SliderTemplate}" />
+                <Slider Name="ColorSliderBlue" ToolTip="0〜255で調整する。ドラッグや矢印キーでは目盛り(20刻み)と255の位置にだけ止まるので、中間の値は左の欄に直接入力する" Style="{StaticResource SliderTemplate}" />
             </StackPanel>
 
             <StackPanel Style="{StaticResource StackPanelHorizontalTemplate}" Margin="30,20,0,0">

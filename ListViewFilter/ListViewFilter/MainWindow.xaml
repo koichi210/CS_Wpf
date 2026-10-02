@@ -6,11 +6,12 @@
     <Grid>
         <StackPanel Margin="10">
             <Button x:Name="AddButton"
+                    ToolTip="UserName+連番のデータを1件追加する。検索欄に一度入力した後は、検索欄を変更するまで一覧に反映されない"
                     Content="Add"
                     FontSize="30"
                     Click="AddButton_Click"/>
 
-            <TextBox x:Name="SearchTextBox" stw:Placeholder.Text="例: UserName1"
+            <TextBox x:Name="SearchTextBox" ToolTip="UserNameにこの文字列を含むものだけを一覧に表示する(大文字小文字を区別する)" stw:Placeholder.Text="例: UserName1"
                      FontSize="20"
                      TextChanged="SearchTextBox_TextChanged"/>
 

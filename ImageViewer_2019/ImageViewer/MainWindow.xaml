@@ -65,14 +65,14 @@
         <StackPanel Orientation=" Horizontal" DockPanel.Dock="Top" >
             <GroupBox Header="操作" Width="50" DockPanel.Dock="Left">
                 <StackPanel Orientation="Vertical" Style="{StaticResource StackPanelInGroupBoxTemplate}" >
-                    <Button Name="ButtonOpenDialog" Content="開く" Click="ButtonOpenDialog_Click"/>
-                    <Button Name="ButtonFormOpenDialog" Content="開く" Click="ButtonFormOpenDialog_Click"/>
+                    <Button Name="ButtonOpenDialog" ToolTip="エクスプローラー形式のダイアログ(パスの貼り付け可)でフォルダを選び、直下の画像(.jpg .bmp .png .tiff .gif)をサムネイル表示する" Content="開く" Click="ButtonOpenDialog_Click"/>
+                    <Button Name="ButtonFormOpenDialog" ToolTip="ツリー形式のダイアログでフォルダを選び、直下の画像(.jpg .bmp .png .tiff .gif)をサムネイル表示する" Content="開く" Click="ButtonFormOpenDialog_Click"/>
                 </StackPanel>
             </GroupBox>
             <GroupBox Header="サムネイルのサイズ" DockPanel.Dock="Left" >
                 <StackPanel Style="{StaticResource StackPanelInGroupBoxTemplate}" >
                     <TextBlock Text="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumbnailSizeNameConverter}}"/>
-                    <Slider Name="SliderThumbnail" 
+                    <Slider Name="SliderThumbnail" ToolTip="サムネイルの大きさを3段階で切り替える(Small 40×30 / Middle 80×60 / Large 120×90)" 
                         Minimum="1" Maximum="3" TickFrequency="1" SmallChange="1" LargeChange="1" Value="2"
                         TickPlacement="BottomRight"/>
                 </StackPanel>
@@ -81,7 +81,7 @@
             <GroupBox Header="拡大/縮小" DockPanel.Dock="Left" >
                 <StackPanel Style="{StaticResource StackPanelInGroupBoxTemplate}" >
                     <TextBlock Text="{Binding ElementName=SliderScale, Path=Value, StringFormat={}{0:0.0} 倍:}" Style="{StaticResource TextBlockTemplate}" />
-                    <Slider Name="SliderScale"
+                    <Slider Name="SliderScale" ToolTip="下に表示中の画像の倍率。0.1〜5.0倍を0.1刻みで指定する"
                         Minimum="0.1" Maximum="5.0" TickFrequency="0.1" SmallChange="0.1" LargeChange="1.0" Value="1.0"/>
                 </StackPanel>
             </GroupBox>
@@ -90,7 +90,7 @@
                     <!--Labelだと、StringFormatでうまく文字が表示できない
                     <Label Content="{Binding ElementName=SliderAngle, Path=Value, StringFormat={0:0000}}" />-->
                     <TextBlock Text="{Binding ElementName=SliderAngle, Path=Value, StringFormat={}{0:000} 度:}" Style="{StaticResource TextBlockTemplate}" />
-                    <Slider Name="SliderAngle"
+                    <Slider Name="SliderAngle" ToolTip="下に表示中の画像の回転角。0〜360度を1度刻みで時計回りに回す"
                         Minimum="0" Maximum="360" TickFrequency="1" SmallChange="1" LargeChange="90" Value="0"/>
                 </StackPanel>
             </GroupBox>
@@ -99,8 +99,8 @@
             <GroupBox Header="ファイル" Width="450" DockPanel.Dock="Right">
                 <StackPanel Orientation="Vertical" Style="{StaticResource StackPanelInGroupBoxTemplate}" >
                     <!--テキストボックスの値を変更されるとサムネイルが不正動作するのでReadOnlyにする-->
-                    <TextBox Name="TextDirName" IsReadOnly="True"/>
-                    <TextBox Name="TextFileName" Text="{Binding ElementName=ListBoxThumbnail, Path=SelectedItem.FileName}" IsReadOnly="True"/>
+                    <TextBox Name="TextDirName" ToolTip="サムネイル表示中のフォルダ(読み取り専用)。左の「開く」で変更する。終了時に保存され、次回起動時に再表示される" IsReadOnly="True"/>
+                    <TextBox Name="TextFileName" ToolTip="サムネイル一覧で選択中のファイル名(読み取り専用)" Text="{Binding ElementName=ListBoxThumbnail, Path=SelectedItem.FileName}" IsReadOnly="True"/>
                 </StackPanel>
             </GroupBox>
         </StackPanel>

@@ -6,9 +6,9 @@
         Closing="WindowClosing">
     <Grid>
         <Label Content="何か文字を入力してください" Height="28" HorizontalAlignment="Left" Margin="81,35,0,0" Name="label1" VerticalAlignment="Top" />
-        <TextBox Height="23" HorizontalAlignment="Left" Margin="81,69,0,0" Name="textBoxPath" stw:Placeholder.Text="例: C:\Work" VerticalAlignment="Top" Width="283" />
-        <Button Content="設定保存" Name="buttonSave" Height="23" HorizontalAlignment="Left" Margin="289,98,0,0" VerticalAlignment="Top" Width="75" Click="buttonSave_Click" />
-        <Button Content="設定読込" Name="buttonLoad" Height="23" HorizontalAlignment="Left" Margin="289,127,0,0" VerticalAlignment="Top" Width="75" Click="buttonLoad_Click" />
-        <Button Content="設定リセット" Height="23" HorizontalAlignment="Left" Margin="289,156,0,0" Name="buttonReset" VerticalAlignment="Top" Width="75" Click="buttonReset_Click"/>
+        <TextBox Height="23" HorizontalAlignment="Left" Margin="81,69,0,0" Name="textBoxPath" ToolTip="ここに入力した内容は設定として保存され、次回起動時に復元される" stw:Placeholder.Text="例: C:\Work" VerticalAlignment="Top" Width="283" />
+        <Button Content="設定保存" Name="buttonSave" ToolTip="ウィンドウの位置・サイズと入力欄の内容を保存する。終了時にも自動で保存される" Height="23" HorizontalAlignment="Left" Margin="289,98,0,0" VerticalAlignment="Top" Width="75" Click="buttonSave_Click" />
+        <Button Content="設定読込" Name="buttonLoad" ToolTip="保存済みのウィンドウの位置・サイズと入力欄の内容を読み込んで反映する" Height="23" HorizontalAlignment="Left" Margin="289,127,0,0" VerticalAlignment="Top" Width="75" Click="buttonLoad_Click" />
+        <Button Content="設定リセット" Height="23" HorizontalAlignment="Left" Margin="289,156,0,0" Name="buttonReset" ToolTip="保存済みの設定を初期値に戻す。画面の表示は変わらず、終了時に今の画面の状態で上書き保存される" VerticalAlignment="Top" Width="75" Click="buttonReset_Click"/>
     </Grid>
 </Window>

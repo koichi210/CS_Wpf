@@ -26,8 +26,8 @@
         <!--スタイル全体をリソースから取得-->
         <Button x:Name="button3" Content="Color Red:"  Style="{StaticResource ButtonTemplate}" Margin="29,12,0,0"/>
         <Button x:Name="button4" Content="Color Red:"  Style="{StaticResource ButtonTemplate}" Margin="250,12,0,0"/>
-        <Button x:Name="button5" Content="PopupFormDialog" Height="34" HorizontalAlignment="Left" Margin="250,12,0,0" VerticalAlignment="Top" Width="200" Click="button5_Click" />
-        <Button Content="PopupWPFDialog" Height="34" HorizontalAlignment="Left" Margin="250,52,0,0" Name="button6" VerticalAlignment="Top" Width="200" Click="button6_Click" />
+        <Button x:Name="button5" ToolTip="WinFormsの子フォーム(FormChild)をモードレスで開く" Content="PopupFormDialog" Height="34" HorizontalAlignment="Left" Margin="250,12,0,0" VerticalAlignment="Top" Width="200" Click="button5_Click" />
+        <Button Content="PopupWPFDialog" Height="34" HorizontalAlignment="Left" Margin="250,52,0,0" Name="button6" ToolTip="WPFの子ウィンドウ(WindowChild)をモードレスで開く" VerticalAlignment="Top" Width="200" Click="button6_Click" />
 
         <Button x:Name="button7" Content="Button"  Style="{StaticResource ButtonAppTemplate}" Margin="28,231,378,6" />
         <Button x:Name="button8" Content="Button"  Style="{StaticResource ButtonAppTemplate}" Margin="134,231,274,6"/>

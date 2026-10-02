@@ -15,10 +15,12 @@
             <Label Content="Phone" Margin="0,0,217,0" Height="22" FontSize="10"/>
             <TextBox x:Name="PhoneTextBox" stw:Placeholder.Text="例: 000-0000-0000" Margin="0,0,-0.667,0"/>
             <Button x:Name="SaveButton"
+                    ToolTip="NameとPhoneを実行フォルダのSqLiteSample.dbに1件追加する。sqlite3のDLLが読み込めず失敗する既知の問題がある"
                     Content="Save"
                     Height="30"
                     Click="SaveButton_Click" Margin="34,5,43.333,0"/>
             <Button x:Name="ReadButton"
+                    ToolTip="未実装(読み込み処理はコメントアウトされていて何も起きない)"
                     Content="Read"
                     Height="30"
                     Click="ReadButton_Click" Margin="34,0,43.333,0"/>
