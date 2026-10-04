@@ -10,14 +10,11 @@ namespace CubNotice
     /// </summary>
     public class AppSettings
     {
-        public const string DefaultHeaderText =
-            "カブ隊保護者のみなさま\r\n" +
-            "副長の〇〇です。\r\n" +
-            "\r\n" +
-            "次回の活動についてご連絡致します。";
-
-        /// <summary>取り込み時に各予定へ設定する固定ヘッダ</summary>
-        public string DefaultHeader { get; set; } = DefaultHeaderText;
+        /// <summary>
+        /// 取り込み時に各予定へ設定する固定ヘッダ。
+        /// 文面はソースに持たず、設定ファイル(settings.json)だけで管理する。
+        /// </summary>
+        public string DefaultHeader { get; set; } = "";
 
         /// <summary>アナウンス文のテンプレート</summary>
         public string Template { get; set; } = AnnouncementFormatter.DefaultTemplate;
