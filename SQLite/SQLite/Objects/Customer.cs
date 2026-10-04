@@ -1,5 +1,4 @@
 ﻿using System;
-using SQLite;
 
 namespace SQLite.Objects
 {
@@ -11,16 +10,16 @@ namespace SQLite.Objects
         ///  AutoIncrement : 1から順にナンバリング
         /// </summary>
         [PrimaryKey, AutoIncrement]
-        public Int32 Id { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// 名前
         /// </summary>
-        public String Name { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// 電話番号
         /// </summary>
-        public String Phone { get; set; }
+        public string Phone { get; set; }
     }
 }

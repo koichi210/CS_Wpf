@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 
 namespace TextBox
 {
@@ -11,13 +10,8 @@ namespace TextBox
         public MainWindow()
         {
             InitializeComponent();
-            TextString1 textString1 = new TextString1();
-            textString1.txt1 = "Hello World";
-            textBox1.DataContext = textString1;
-
-            TextString2 textString2 = new TextString2();
-            textBox2.DataContext = textString2;
-
+            textBox1.DataContext = new TextString1 { Text1 = "Hello World" };
+            textBox2.DataContext = new TextString2();
             textBox3.DataContext = new TextString3();
 
             textBox4.Text = "バインドせずに設定";
@@ -26,33 +20,18 @@ namespace TextBox
 
     public class TextString1
     {
-        public String txt1 { get; set; }
-
-        // コンストラクタ(データ入力)
-        public TextString1()
-        {
-        }
+        public string Text1 { get; set; }
     }
 
     public class TextString2
     {
-        public String txt2 { get; set; }
-
-        // コンストラクタ(データ入力)
-        public TextString2()
-        {
-            txt2 = "Hola!!";
-        }
+        // 初期値を持つプロパティ
+        public string Text2 { get; set; } = "Hola!!";
     }
 
     public class TextString3
     {
-        public String txt3 { get; set; }
-
-        // コンストラクタ(データ入力)
-        public TextString3()
-        {
-            txt3 = "World!!";
-        }
+        // 初期値を持つプロパティ
+        public string Text3 { get; set; } = "World!!";
     }
 }

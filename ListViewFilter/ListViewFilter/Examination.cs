@@ -4,13 +4,13 @@ namespace ListViewFilter
 {
     public class Examination
     {
-        public Int32 Id { get; set; }
-        public String Subject { get; set; }
-        public Int32 Point { get; set; }
-        public String UserName { get; set; }
-        public String ClassName { get; set; }
+        public int Id { get; set; }
+        public string Subject { get; set; }
+        public int Point { get; set; }
+        public string UserName { get; set; }
+        public string ClassName { get; set; }
 
-        public override String ToString()
+        public override string ToString()
         {
             return $"{Id} - {Subject} - {Point} - {UserName} - {ClassName}";
         }

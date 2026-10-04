@@ -37,27 +37,30 @@ namespace SaveRestore
 
         private void LoadSettings()
         {
+            var settings = Properties.Settings.Default;
+
             // 画面サイズ
-            this.Left = Properties.Settings.Default.ScreenLeft;
-            this.Top = Properties.Settings.Default.ScreenTop;
-            this.Width = Properties.Settings.Default.ScreenWidth;
-            this.Height = Properties.Settings.Default.ScreenHeight;
+            Left = settings.ScreenLeft;
+            Top = settings.ScreenTop;
+            Width = settings.ScreenWidth;
+            Height = settings.ScreenHeight;
 
             // 設定値をコントロールに配置
-            textBoxPath.Text = Properties.Settings.Default.textBoxPath;
+            textBoxPath.Text = settings.textBoxPath;
         }
 
         private void SaveSettings()
         {
             // Default設定を変更
-            Properties.Settings.Default.ScreenLeft = this.Left;
-            Properties.Settings.Default.ScreenTop = this.Top;
-            Properties.Settings.Default.ScreenWidth = this.Width;
-            Properties.Settings.Default.ScreenHeight = this.Height;
-            Properties.Settings.Default.textBoxPath = textBoxPath.Text;
+            var settings = Properties.Settings.Default;
+            settings.ScreenLeft = Left;
+            settings.ScreenTop = Top;
+            settings.ScreenWidth = Width;
+            settings.ScreenHeight = Height;
+            settings.textBoxPath = textBoxPath.Text;
 
             // 設定を保存
-            Properties.Settings.Default.Save();
+            settings.Save();
         }
     }
 }

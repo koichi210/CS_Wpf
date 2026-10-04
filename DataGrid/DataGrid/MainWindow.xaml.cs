@@ -12,16 +12,16 @@ namespace DataGrid
         public MainWindow()
         {
             InitializeComponent();
-            this.DataContext = new ExaminationList();
+            DataContext = new ExaminationList();
         }
     }
 
     public class Examination
     {
-        public String Subject { get; set; }
-        public Int32 Point { get; set; }
-        public String UserName { get; set; }
-        public String ClassName { get; set; }
+        public string Subject { get; set; }
+        public int Point { get; set; }
+        public string UserName { get; set; }
+        public string ClassName { get; set; }
     }
 
     public class ExaminationList

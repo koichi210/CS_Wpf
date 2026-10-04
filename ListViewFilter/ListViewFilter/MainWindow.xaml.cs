@@ -10,8 +10,8 @@ namespace ListViewFilter
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly ObservableCollection<Examination> m_examinations = new ObservableCollection<Examination>();
-        private int m_registeredCount = 0;
+        private readonly ObservableCollection<Examination> _examinations = new ObservableCollection<Examination>();
+        private int _registeredCount;
         
         public MainWindow()
         {
@@ -21,12 +21,12 @@ namespace ListViewFilter
             {
                 AddExamination();
             }
-            CustomerListView.ItemsSource = m_examinations;
+            CustomerListView.ItemsSource = _examinations;
         }
 
         private void AddExamination()
         {
-            m_examinations.Add(new Examination { Id = ++m_registeredCount, Subject = "Subject" + m_registeredCount, Point = 0, UserName = "UserName" + m_registeredCount });
+            _examinations.Add(new Examination { Id = ++_registeredCount, Subject = "Subject" + _registeredCount, Point = 0, UserName = "UserName" + _registeredCount });
         }
 
         private void AddButton_Click(object sender, RoutedEventArgs e)
@@ -34,12 +34,12 @@ namespace ListViewFilter
             AddExamination();
 
             // リストを更新するとフィルタが無効になる
-            //CustomerListView.ItemsSource = _customers;
+            //CustomerListView.ItemsSource = _examinations;
         }
 
         private void SearchTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var filterList = m_examinations.Where(x => x.UserName.Contains(SearchTextBox.Text)).ToList();
+            var filterList = _examinations.Where(x => x.UserName.Contains(SearchTextBox.Text)).ToList();
             CustomerListView.ItemsSource = filterList;
         }
     }

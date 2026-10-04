@@ -14,14 +14,12 @@ namespace Resource
 
         private void button5_Click(object sender, RoutedEventArgs e)
         {
-            FormChild formChild = new FormChild();
-            formChild.Show();
+            new FormChild().Show();
         }
 
         private void button6_Click(object sender, RoutedEventArgs e)
         {
-            WindowChild windowChild = new WindowChild();
-            windowChild.Show();
+            new WindowChild().Show();
         }
     }
 }

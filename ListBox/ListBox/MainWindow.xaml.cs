@@ -1,6 +1,5 @@
-﻿using System;
+﻿using System.Collections.ObjectModel;
 using System.Windows;
-using System.Collections.ObjectModel;
 
 namespace ListBox
 {
@@ -14,24 +13,20 @@ namespace ListBox
             InitializeComponent();
 
             // 要素がデータバインディングに含まれている場合に、その要素のデータコンテキストを取得または設定
-            this.DataContext = new PrefectureList();
+            DataContext = new PrefectureList();
         }
     }
 
     public class PrefectureList
     {
         // バインディングの指定先プロパティ
-        public ObservableCollection<String> Prefectures { get; set; }
-
-        // コンストラクタ(データ入力)
-        public PrefectureList()
+        public ObservableCollection<string> Prefectures { get; set; } = new ObservableCollection<string>
         {
-            Prefectures = new ObservableCollection<String>();
-            Prefectures.Add("Tokyo");
-            Prefectures.Add("Osaka");
-            Prefectures.Add("Fukuoka");
-            Prefectures.Add("Kanagawa");
-            Prefectures.Add("Hokkaido");
-        }
+            "Tokyo",
+            "Osaka",
+            "Fukuoka",
+            "Kanagawa",
+            "Hokkaido",
+        };
     }
 }

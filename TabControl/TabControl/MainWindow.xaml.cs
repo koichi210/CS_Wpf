@@ -1,5 +1,4 @@
 ﻿using System.Windows;
-using System.Windows.Controls;
 
 namespace TabControl
 {
@@ -11,10 +10,6 @@ namespace TabControl
         public MainWindow()
         {
             InitializeComponent();
-        }
-
-        private void tabControl1_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
         }
     }
 }

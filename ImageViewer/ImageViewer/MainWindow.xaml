@@ -3,8 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:ImageViewer"
         Title="ImageViewer" Height="520" Width="880"
-        Loaded="WindowLoaded"
-        Closing="WindowClosing">
+        Loaded="WindowLoaded">
 
     <Window.Resources>
         <Style TargetType="StackPanel" x:Key="StackPanelInGroupBoxTemplate">
@@ -59,10 +58,10 @@
     <DockPanel>
         <!--Imageコントロールの画像が上に張り付く
         <StackPanel Orientation="Vertical">-->
-        <StackPanel Orientation=" Horizontal" DockPanel.Dock="Top" >
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" >
             <GroupBox Header="操作" Width="50" DockPanel.Dock="Left">
                 <StackPanel Orientation="Vertical" Style="{StaticResource StackPanelInGroupBoxTemplate}" >
-                    <Button Name="ButtonOpenDialog" ToolTip="未実装(フォルダ選択処理がコメントアウトされている)。押すと「フォルダが選択されていません」と表示されるだけ" Content="開く" Click="ButtonOpenDialog_Click"/>
+                    <Button Name="ButtonOpenDialog" ToolTip="未実装(WindowsAPICodePack未導入のためフォルダ選択処理がない)。押すと「フォルダが選択されていません」と表示されるだけ" Content="開く" Click="ButtonOpenDialog_Click"/>
                     <Button Name="ButtonFormOpenDialog" ToolTip="ツリー形式のダイアログでフォルダを選び、直下の画像(.jpg .bmp .png .tiff .gif)をサムネイル表示する" Content="開く" Click="ButtonFormOpenDialog_Click"/>
                 </StackPanel>
             </GroupBox>
@@ -116,7 +115,7 @@
                     <!--Memo：WrapPanelのOrientationがVerticalの場合、StackPanelのOrientationをHorizontalにしないと、ファイル名が表示されない-->
                     <StackPanel>
                         <Image Stretch="Fill"
-                               Source="{Binding FileFullpath, Converter={StaticResource ImageConverter}}"
+                               Source="{Binding FileFullPath, Converter={StaticResource ImageConverter}}"
                                Width="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumbnailSizeWidthConverter}}"
                                Height="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumbnailSizeHeightConverter}}"/>
                         <TextBlock Text="{Binding FileName}"/>
@@ -128,7 +127,7 @@
         <!--<StackPanel Orientation="Vertical">を設定していると、スクロールバーが常にDisableになる-->
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             <!--「Stretch="None"」にしないとScalingが効かない-->
-            <Image Name="ImageView" Stretch="None" Source="{Binding ElementName=ListBoxThumbnail, Path=SelectedItem.FileFullpath}" >
+            <Image Name="ImageView" Stretch="None" Source="{Binding ElementName=ListBoxThumbnail, Path=SelectedItem.FileFullPath}" >
                 <Image.LayoutTransform>
                     <TransformGroup>
                         <RotateTransform Angle="{Binding ElementName=SliderAngle, Path=Value}"/>
