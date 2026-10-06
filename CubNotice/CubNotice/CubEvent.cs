@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 
 namespace CubNotice
 {
@@ -36,6 +37,27 @@ namespace CubNotice
 
         /// <summary>⑨備考(「※」を除いた本文。複数行あり。無い場合は空)</summary>
         public string Notes { get; set; } = "";
+
+        /// <summary>
+        /// 集合・解散などの詳細が載っているか。
+        /// 「今後の予定」の☆1行だけから取り込んだ予定はfalse(日付とタイトルだけ)。
+        /// </summary>
+        [JsonIgnore]
+        public bool HasDetail
+        {
+            get
+            {
+                return !string.IsNullOrWhiteSpace(Gathering) || !string.IsNullOrWhiteSpace(Dismissal)
+                    || !string.IsNullOrWhiteSpace(Place) || !string.IsNullOrWhiteSpace(Belongings);
+            }
+        }
+
+        /// <summary>一覧に出す区分の表示</summary>
+        [JsonIgnore]
+        public string KindText
+        {
+            get { return HasDetail ? "詳細あり" : "予定のみ"; }
+        }
 
         /// <summary>
         /// 日付の表示形式(例: "10月 4日(日)")。日は2桁幅で右寄せする。

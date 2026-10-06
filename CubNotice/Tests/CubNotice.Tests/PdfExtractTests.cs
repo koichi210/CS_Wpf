@@ -34,7 +34,7 @@ namespace CubNotice.Tests
                 ParseResult result = NewsletterParser.Parse(lines, "ヘッダ", new DateTime(2026, 10, 4));
 
                 Assert.AreEqual(new DateTime(2026, 9, 27), result.IssueDate, string.Join("\n", lines));
-                Assert.AreEqual(3, result.Events.Count, string.Join("\n", lines));
+                Assert.AreEqual(7, result.Events.Count, string.Join("\n", lines));
                 CubEvent first = result.Events[0];
                 Assert.AreEqual("隊集会 赤い羽根共同募金＆カントリー大作戦", first.Title);
                 Assert.AreEqual("13時00分  Ａ駅南口藤棚下", first.Gathering);

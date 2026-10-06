@@ -14,8 +14,11 @@ namespace CubNotice
         /// <summary>「2026/9/27 発行」から読み取った発行日(無ければnull)。</summary>
         public DateTime? IssueDate { get; set; }
 
-        /// <summary>集合・解散などの詳細が無く、取り込まなかった「☆」行(今後の予定など)。</summary>
-        public List<string> SkippedLines { get; } = new List<string>();
+        /// <summary>集合・解散などの詳細が無く、日付とタイトルだけ取り込んだ予定(今後の予定など)の件数。</summary>
+        public int SummaryCount
+        {
+            get { return Events.Count(e => !e.HasDetail); }
+        }
     }
 
     /// <summary>
@@ -66,13 +69,13 @@ namespace CubNotice
                 if (head.Success)
                 {
                     Close(current, result);
-                    current = new Block(line, new CubEvent
+                    current = new Block(new CubEvent
                     {
                         Header = header ?? "",
                         Date = InferDate(int.Parse(head.Groups[1].Value), int.Parse(head.Groups[2].Value), baseDate),
                         DayOfWeekText = head.Groups[3].Value.Trim(),
-                        Title = head.Groups[4].Value.Trim(),
                     });
+                    current.SetTitle(head.Groups[4].Value);
                     continue;
                 }
                 if (current == null)
@@ -97,15 +100,9 @@ namespace CubNotice
             {
                 return;
             }
-            if (block.HasDetail)
-            {
-                block.Event.Notes = string.Join(Environment.NewLine, block.Notes);
-                result.Events.Add(block.Event);
-            }
-            else
-            {
-                result.SkippedLines.Add(block.HeadLine);
-            }
+            // 詳細(集合・解散など)が無い「今後の予定」も、日付とタイトルだけで取り込む
+            block.Event.Notes = string.Join(Environment.NewLine, block.Notes);
+            result.Events.Add(block.Event);
         }
 
         private static bool IsSectionBreak(string line)
@@ -179,16 +176,29 @@ namespace CubNotice
             private Part last = Part.Title;
             private string lastField;
 
-            public Block(string headLine, CubEvent cubEvent)
+            public Block(CubEvent cubEvent)
             {
-                HeadLine = headLine;
                 Event = cubEvent;
             }
 
-            public string HeadLine { get; }
             public CubEvent Event { get; }
             public List<string> Notes { get; } = new List<string>();
-            public bool HasDetail { get; private set; }
+
+            /// <summary>
+            /// タイトルを設定する。「発団50周年記念式典(…)※保護者のご参加もお願いします」のように
+            /// タイトル行の途中に※があれば、そこから後ろは備考にする。
+            /// </summary>
+            public void SetTitle(string title)
+            {
+                int mark = title.IndexOf('※');
+                if (mark >= 0)
+                {
+                    Notes.Add(title.Substring(mark + 1).Trim());
+                    title = title.Substring(0, mark);
+                    last = Part.Note;
+                }
+                Event.Title = title.Trim();
+            }
 
             public void Add(string line)
             {
@@ -197,7 +207,6 @@ namespace CubNotice
                 {
                     lastField = Regex.Replace(field.Groups[1].Value, @"\s", "");
                     SetField(lastField, field.Groups[2].Value.Trim());
-                    HasDetail = true;
                     last = Part.Field;
                     return;
                 }

@@ -25,13 +25,13 @@ namespace CubNotice.Tests
         // ---- 解析(データ追加フェーズ) ----
 
         [TestMethod]
-        public void Parse_詳細のある予定だけを取り込む()
+        public void Parse_今後の予定も予定のみとして取り込む()
         {
             ParseResult result = ParseSample();
 
             Assert.AreEqual(new DateTime(2026, 9, 27), result.IssueDate);
-            Assert.AreEqual(3, result.Events.Count);
-            Assert.AreEqual(3, result.SkippedLines.Count, "今後の予定(☆1行だけ)はスキップされる");
+            Assert.AreEqual(7, result.Events.Count);
+            Assert.AreEqual(4, result.SummaryCount, "今後の予定(☆1行だけ)は予定のみとして取り込む");
         }
 
         [TestMethod]
@@ -173,7 +173,7 @@ namespace CubNotice.Tests
 
                 EventStore reloaded = new EventStore(path);
                 reloaded.Load();
-                Assert.AreEqual(3, reloaded.Events.Count);
+                Assert.AreEqual(7, reloaded.Events.Count);
 
                 // 当日の予定は「次回」に含める
                 Assert.AreEqual(new DateTime(2026, 10, 4), reloaded.FindNext(new DateTime(2026, 10, 4)).Date);
@@ -184,9 +184,21 @@ namespace CubNotice.Tests
                 Assert.AreEqual(1, removed.Count);
                 Assert.AreEqual(new DateTime(2026, 10, 17), reloaded.FindNext(today).Date);
 
-                // すべて過ぎたら次回は無し
+                // 「次の次」は10/18
+                CollectionAssert.AreEqual(
+                    new[] { new DateTime(2026, 10, 17), new DateTime(2026, 10, 18) },
+                    reloaded.FindUpcoming(today, EventStore.UpcomingChoiceCount).Select(e => e.Date).ToArray());
+
+                // 10/19には今後の予定(11/3、予定のみ)が次回になる
                 reloaded.RemovePast(new DateTime(2026, 10, 19));
-                Assert.IsNull(reloaded.FindNext(new DateTime(2026, 10, 19)));
+                CubEvent next = reloaded.FindNext(new DateTime(2026, 10, 19));
+                Assert.AreEqual(new DateTime(2026, 11, 3), next.Date);
+                Assert.IsFalse(next.HasDetail);
+
+                // すべて過ぎたら次回は無し
+                reloaded.RemovePast(new DateTime(2027, 1, 18));
+                Assert.IsNull(reloaded.FindNext(new DateTime(2027, 1, 18)));
+                Assert.AreEqual(0, reloaded.FindUpcoming(new DateTime(2027, 1, 18), 2).Count);
             }
             finally
             {
@@ -198,12 +210,62 @@ namespace CubNotice.Tests
         public void Store_同じ日付とタイトルは上書きされる()
         {
             EventStore store = new EventStore(Path.Combine(Path.GetTempPath(), "unused.json"));
-            Tuple<int, int> first = store.AddOrUpdate(ParseSample().Events);
-            Tuple<int, int> second = store.AddOrUpdate(ParseSample().Events);
+            ImportCounts first = store.AddOrUpdate(ParseSample().Events);
+            ImportCounts second = store.AddOrUpdate(ParseSample().Events);
 
-            Assert.AreEqual(Tuple.Create(3, 0), first);
-            Assert.AreEqual(Tuple.Create(0, 3), second);
-            Assert.AreEqual(3, store.Events.Count);
+            Assert.AreEqual(7, first.Added);
+            Assert.AreEqual(0, first.Updated);
+            Assert.AreEqual(0, second.Added);
+            Assert.AreEqual(7, second.Updated);
+            Assert.AreEqual(7, store.Events.Count);
+        }
+
+        [TestMethod]
+        public void Store_予定のみは後から来た詳細ありの予定に置き換わる()
+        {
+            EventStore store = new EventStore(Path.Combine(Path.GetTempPath(), "unused.json"));
+            store.AddOrUpdate(new[] { new CubEvent { Date = new DateTime(2026, 11, 3), Title = "県央地区ラリー（午前午後の活動）" } });
+
+            // 11月号: タイトルの書き方が変わっていても、同じ日の詳細ありの予定で置き換える
+            CubEvent detail = new CubEvent { Date = new DateTime(2026, 11, 3), Title = "県央地区ラリー", Gathering = "8時30分  集合場所" };
+            ImportCounts counts = store.AddOrUpdate(new[] { detail });
+            Assert.AreEqual(1, counts.Added);
+            Assert.AreSame(detail, store.Events.Single());
+
+            // その後に古い号を取り込み直しても、予定のみで上書きしない
+            counts = store.AddOrUpdate(new[] { new CubEvent { Date = new DateTime(2026, 11, 3), Title = "県央地区ラリー（午前午後の活動）" } });
+            Assert.AreEqual(1, counts.Skipped);
+            Assert.AreSame(detail, store.Events.Single());
+        }
+
+        [TestMethod]
+        public void Parse_タイトル行の米印から後ろは備考になる()
+        {
+            CubEvent e = ParseSample().Events.Single(x => x.Date == new DateTime(2026, 11, 29));
+
+            Assert.AreEqual("発団 50周年記念式典（午前午後の活動）", e.Title);
+            Assert.AreEqual("保護者のご参加もお願いします", e.Notes);
+            Assert.AreEqual("火・祝", ParseSample().Events.Single(x => x.Date == new DateTime(2026, 11, 3)).DayOfWeekText);
+            Assert.AreEqual(new DateTime(2027, 1, 17), ParseSample().Events.Last().Date);
+        }
+
+        [TestMethod]
+        public void Format_予定のみなら集合などの行は見出しごと消える()
+        {
+            CubEvent e = ParseSample().Events.Single(x => x.Date == new DateTime(2026, 11, 29));
+            string expected = string.Join(Environment.NewLine, new[]
+            {
+                "カブ隊保護者のみなさま",
+                "副長の〇〇です。",
+                "",
+                "次回の活動についてご連絡致します。",
+                "",
+                "11月29日(日) 発団 50周年記念式典（午前午後の活動）",
+                "",
+                "保護者のご参加もお願いします",
+            });
+
+            Assert.AreEqual(expected, AnnouncementFormatter.Format(e, AnnouncementFormatter.DefaultTemplate));
         }
     }
 }

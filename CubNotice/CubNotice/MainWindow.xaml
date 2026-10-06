@@ -30,6 +30,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="開催日" Binding="{Binding Date, StringFormat=yyyy/MM/dd}" Width="85" />
                             <DataGridTextColumn Header="曜日" Binding="{Binding DayOfWeekText}" Width="45" />
+                            <DataGridTextColumn Header="区分" Binding="{Binding KindText, Mode=OneWay}" Width="60" IsReadOnly="True" />
                             <DataGridTextColumn Header="タイトル" Binding="{Binding Title}" Width="200"
                                                 ElementStyle="{StaticResource CellTextStyle}" EditingElementStyle="{StaticResource MultiLineEditStyle}" />
                             <DataGridTextColumn Header="サブタイトル" Binding="{Binding Subtitle}" Width="160"
@@ -54,7 +55,9 @@
             <TabItem Header="次回開催案内">
                 <DockPanel Margin="6">
                     <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
-                        <Button x:Name="MakeNextButton" Content="次回開催案内をだす(_N)" Padding="10,3" Margin="0,0,6,0" Click="MakeNextButton_Click" />
+                        <RadioButton x:Name="NextRadio" Content="次回" IsChecked="True" VerticalAlignment="Center" Margin="0,0,8,0" Checked="TargetRadio_Checked" />
+                        <RadioButton x:Name="AfterNextRadio" Content="次の次" VerticalAlignment="Center" Margin="0,0,10,0" Checked="TargetRadio_Checked" />
+                        <Button x:Name="MakeNextButton" Content="開催案内をだす(_N)" Padding="10,3" Margin="0,0,6,0" Click="MakeNextButton_Click" />
                         <Button x:Name="CopyButton" Content="コピー(_C)" Padding="10,3" Margin="0,0,12,0" Click="CopyButton_Click" />
                         <TextBlock x:Name="NextInfoText" VerticalAlignment="Center" />
                     </WrapPanel>
@@ -79,7 +82,7 @@
                     <TextBox x:Name="HeaderBox" Grid.Row="1" Grid.Column="0" AcceptsReturn="True" TextWrapping="Wrap"
                              VerticalScrollBarVisibility="Auto" Margin="0,0,6,0" />
                     <TextBlock Grid.Row="0" Grid.Column="1" Margin="6,0,0,4" TextWrapping="Wrap"
-                               Text="案内文テンプレート(差し込み項目だけの行は、値が空なら行ごと消えます)" />
+                               Text="案内文テンプレート(差し込み項目がすべて空の行は、行ごと消えます)" />
                     <TextBox x:Name="TemplateBox" Grid.Row="1" Grid.Column="1" AcceptsReturn="True" TextWrapping="Wrap"
                              VerticalScrollBarVisibility="Auto" Margin="6,0,0,0" />
                     <TextBlock x:Name="PlaceholderHelp" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,6,0,0" TextWrapping="Wrap" />

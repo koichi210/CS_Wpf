@@ -108,21 +108,22 @@ namespace CubNotice
             ParseResult result = NewsletterParser.Parse(lines, settings.DefaultHeader, DateTime.Today);
             if (result.Events.Count == 0)
             {
-                MessageBox.Show(this, sourceName + "から予定(「☆ 月日(曜)」で始まり、集合・解散などがあるもの)が見つかりませんでした。\n\n"
+                MessageBox.Show(this, sourceName + "から予定(「☆ 月日(曜)」で始まる行)が見つかりませんでした。\n\n"
                     + "読み取った文字(先頭20行):\n" + string.Join("\n", lines.Take(20)),
                     Title, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            Tuple<int, int> counts = store.AddOrUpdate(result.Events);
+            ImportCounts counts = store.AddOrUpdate(result.Events);
             store.Save();
             RefreshGrid();
             MainTab.SelectedIndex = 0;
 
-            string message = string.Format("{0}から予定を取り込みました。(追加 {1}件 / 上書き {2}件)", sourceName, counts.Item1, counts.Item2);
-            if (result.SkippedLines.Count > 0)
+            string message = string.Format("{0}から予定を取り込みました。(追加 {1}件 / 上書き {2}件、うち予定のみ {3}件)",
+                sourceName, counts.Added, counts.Updated, result.SummaryCount);
+            if (counts.Skipped > 0)
             {
-                message += string.Format("  ※詳細の無い予定 {0}件はスキップ", result.SkippedLines.Count);
+                message += string.Format("  ※詳細ありの予定が既にある日の「予定のみ」{0}件はそのまま", counts.Skipped);
             }
             StatusText.Text = message;
         }
@@ -183,19 +184,42 @@ namespace CubNotice
 
         private void MakeNextButton_Click(object sender, RoutedEventArgs e)
         {
+            MakeAnnouncement();
+        }
+
+        private void TargetRadio_Checked(object sender, RoutedEventArgs e)
+        {
+            // 起動直後(画面の組み立て中)は作らない。案内を一度出した後の切り替えだけ反映する
+            if (IsLoaded && AnnouncementBox.Text.Length > 0)
+            {
+                MakeAnnouncement();
+            }
+        }
+
+        /// <summary>
+        /// 「次回」(既定)または「次の次」の開催案内を作る。作る前に過ぎた予定を削除する。
+        /// </summary>
+        private void MakeAnnouncement()
+        {
             EventGrid.CommitEdit(DataGridEditingUnit.Row, true);
             int removed = RemovePastEvents();
-            CubEvent next = store.FindNext(DateTime.Today);
             string removedText = removed > 0 ? string.Format("(過ぎた予定 {0}件を削除しました)", removed) : "";
-            if (next == null)
+
+            List<CubEvent> upcoming = store.FindUpcoming(DateTime.Today, EventStore.UpcomingChoiceCount);
+            int index = AfterNextRadio.IsChecked == true ? 1 : 0;
+            string targetName = index == 0 ? "次回" : "次の次";
+            if (upcoming.Count <= index)
             {
                 AnnouncementBox.Text = "";
-                NextInfoText.Text = "次回の予定がありません。新しいカブ8通信を取り込んでください。" + removedText;
+                NextInfoText.Text = targetName + "の予定がありません。新しいカブ8通信を取り込んでください。" + removedText;
                 return;
             }
-            AnnouncementBox.Text = AnnouncementFormatter.Format(next, settings.Template);
-            NextInfoText.Text = string.Format("{0:yyyy/MM/dd} の予定です。{1}", next.Date, removedText);
-            StatusText.Text = "次回開催案内を作成しました。";
+
+            CubEvent target = upcoming[index];
+            AnnouncementBox.Text = AnnouncementFormatter.Format(target, settings.Template);
+            string warning = target.HasDetail ? "" : "  ⚠ 予定のみ(集合・解散などはまだ載っていません)";
+            NextInfoText.Text = string.Format("{0}: {1:yyyy/MM/dd} の予定です。{2}{3}", targetName, target.Date, warning, removedText);
+            StatusText.Text = targetName + "の開催案内を作成しました。";
         }
 
         private void CopyButton_Click(object sender, RoutedEventArgs e)

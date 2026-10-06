@@ -37,7 +37,7 @@ namespace CubNotice
 
         /// <summary>
         /// アナウンス文を作る。
-        /// 差し込み項目だけの行で、その値が空なら行ごと消す(サブタイトル・備考が無い場合など)。
+        /// 差し込み項目がすべて空の行は行ごと消す(サブタイトル・備考が無い場合など)。
         /// </summary>
         public static string Format(CubEvent cubEvent, string template)
         {
@@ -58,14 +58,21 @@ namespace CubNotice
             List<string> output = new List<string>();
             foreach (string templateLine in templateLines)
             {
-                bool onlyPlaceholders = PlaceholderRegex.IsMatch(templateLine)
-                    && PlaceholderRegex.Replace(templateLine, "").Trim().Length == 0;
+                // 差し込み項目がすべて空の行は、「集 合 ：」のような見出しごと消す
+                // (サブタイトル・備考が無い時や、「予定のみ」で集合・解散がまだ分からない時)
+                List<string> keys = PlaceholderRegex.Matches(templateLine).Cast<Match>()
+                    .Select(m => m.Value).Where(values.ContainsKey).ToList();
+                if (keys.Count > 0 && keys.All(k => Clean(values[k]).Length == 0))
+                {
+                    continue;
+                }
                 string line = PlaceholderRegex.Replace(templateLine, m =>
                 {
                     string value;
                     return values.TryGetValue(m.Value, out value) ? Clean(value) : m.Value;
                 });
-                if (onlyPlaceholders && line.Trim().Length == 0)
+                // 行が消えたことで空行が続いたら1つにまとめる
+                if (line.Trim().Length == 0 && output.Count > 0 && output[output.Count - 1].Trim().Length == 0)
                 {
                     continue;
                 }
