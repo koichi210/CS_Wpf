@@ -1,0 +1,33 @@
+﻿<Window x:Class="TurnMemory.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="順番記憶"
+        Icon="TurnMemory.ico"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterScreen"
+        UseLayoutRounding="True"
+        FontFamily="MS PGothic"
+        FontSize="12"
+        Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+        Closed="Window_Closed">
+    <!-- MFC版のダイアログ(270×166 DLU、MS Pゴシック9pt)を1DLU=1.5pxで再現。座標は.rcの値×1.5。
+         マスと行・列の見出しはCellGridがコードで並べる -->
+    <Canvas x:Name="canvas" Width="405" Height="249">
+        <ComboBox x:Name="comboBoxProblem"
+                  Canvas.Left="319.5" Canvas.Top="37.5" Width="58.5" Height="20"
+                  MaxDropDownHeight="120" />
+        <Button x:Name="buttonStart" Content="スタート"
+                Canvas.Left="310.5" Canvas.Top="145.5" Width="75" Height="21"
+                Click="buttonStart_Click" />
+        <Button x:Name="buttonAns" Content="御明算" IsEnabled="False"
+                Canvas.Left="310.5" Canvas.Top="172.5" Width="75" Height="21"
+                Click="buttonAns_Click" />
+        <!-- 元はIDOKのDEFPUSHBUTTON(Enterで終了)。Escで閉じるのもMFCのダイアログと同じにする -->
+        <Button x:Name="buttonOk" Content="終了" IsDefault="True" IsCancel="True"
+                Canvas.Left="310.5" Canvas.Top="199.5" Width="75" Height="21"
+                Click="buttonOk_Click" />
+        <TextBlock x:Name="textTitle" Text="Title Text" TextAlignment="Center"
+                   Canvas.Left="58.5" Canvas.Top="15" Width="153" Height="16.5" />
+    </Canvas>
+</Window>

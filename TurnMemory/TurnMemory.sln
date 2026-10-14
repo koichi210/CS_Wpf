@@ -1,0 +1,31 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TurnMemory", "TurnMemory\TurnMemory.csproj", "{436F75DB-04C9-4E89-B7E4-218AA6F97E2C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TurnMemory.Tests", "Tests\TurnMemory.Tests\TurnMemory.Tests.csproj", "{6F076516-111C-462F-84A2-99423795B9A8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{436F75DB-04C9-4E89-B7E4-218AA6F97E2C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{436F75DB-04C9-4E89-B7E4-218AA6F97E2C}.Debug|x64.Build.0 = Debug|Any CPU
+		{436F75DB-04C9-4E89-B7E4-218AA6F97E2C}.Release|x64.ActiveCfg = Release|Any CPU
+		{436F75DB-04C9-4E89-B7E4-218AA6F97E2C}.Release|x64.Build.0 = Release|Any CPU
+		{6F076516-111C-462F-84A2-99423795B9A8}.Debug|x64.ActiveCfg = Debug|x64
+		{6F076516-111C-462F-84A2-99423795B9A8}.Debug|x64.Build.0 = Debug|x64
+		{6F076516-111C-462F-84A2-99423795B9A8}.Release|x64.ActiveCfg = Release|x64
+		{6F076516-111C-462F-84A2-99423795B9A8}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8D63E524-95C6-4DF9-AC55-92CD563D055D}
+	EndGlobalSection
+EndGlobal
