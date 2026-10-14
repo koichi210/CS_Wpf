@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToyingData", "ToyingData\ToyingData.csproj", "{203D7F67-18CE-455C-BE19-AC7AF65C86F9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ToyingData.Tests", "Tests\ToyingData.Tests\ToyingData.Tests.csproj", "{40A03244-40FB-40CF-8D0B-113B0A02090B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{203D7F67-18CE-455C-BE19-AC7AF65C86F9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{203D7F67-18CE-455C-BE19-AC7AF65C86F9}.Debug|x64.Build.0 = Debug|Any CPU
+		{203D7F67-18CE-455C-BE19-AC7AF65C86F9}.Release|x64.ActiveCfg = Release|Any CPU
+		{203D7F67-18CE-455C-BE19-AC7AF65C86F9}.Release|x64.Build.0 = Release|Any CPU
+		{40A03244-40FB-40CF-8D0B-113B0A02090B}.Debug|x64.ActiveCfg = Debug|x64
+		{40A03244-40FB-40CF-8D0B-113B0A02090B}.Debug|x64.Build.0 = Debug|x64
+		{40A03244-40FB-40CF-8D0B-113B0A02090B}.Release|x64.ActiveCfg = Release|x64
+		{40A03244-40FB-40CF-8D0B-113B0A02090B}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {ACFA6A97-069D-4425-A49E-D90D56DC70DF}
+	EndGlobalSection
+EndGlobal
