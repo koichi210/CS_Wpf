@@ -1,0 +1,72 @@
+<Window x:Class="ChotChotChat.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ちょっと！ちょっとチャット！"
+        Width="356" Height="241"
+        MinWidth="320" MinHeight="240"
+        FontFamily="MS UI Gothic"
+        FontSize="12"
+        Closed="Window_Closed">
+    <Grid Margin="10,12,12,6">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Row="0" Grid.ColumnSpan="2" Orientation="Horizontal" Margin="57,0,0,6">
+            <Button x:Name="button_Server"
+                    Content="Server"
+                    Width="75" Height="23"
+                    TabIndex="0"
+                    ToolTip="このPC(127.0.0.1)のポート8080で接続を待ち、メッセージを1件受信したら切断する。待っている間も画面は操作できる"
+                    ToolTipService.ShowDuration="15000"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="button_Server_Click" />
+            <Button x:Name="button_Client"
+                    Content="client"
+                    Width="75" Height="23"
+                    Margin="17,0,0,0"
+                    TabIndex="1"
+                    ToolTip="このPC(127.0.0.1)のポート8080で待っているサーバーに接続する"
+                    ToolTipService.ShowDuration="15000"
+                    ToolTipService.ShowOnDisabled="True"
+                    Click="button_Client_Click" />
+        </StackPanel>
+
+        <TextBox x:Name="textBox_Log"
+                 Grid.Row="1" Grid.Column="0"
+                 Margin="2,0,0,6"
+                 IsReadOnly="True"
+                 TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto"
+                 TabIndex="2" />
+
+        <TextBox x:Name="textBox_Message"
+                 Grid.Row="2" Grid.Column="0"
+                 Height="23"
+                 VerticalContentAlignment="Center"
+                 TabIndex="3" />
+        <Button x:Name="button_Send"
+                Grid.Row="2" Grid.Column="1"
+                Content="送信"
+                Width="42" Height="23"
+                Margin="6,0,0,0"
+                TabIndex="4"
+                ToolTip="メッセージを送信し、サーバーの応答を受け取ったら切断する。次に送る前にclientで接続し直す必要がある"
+                ToolTipService.ShowDuration="15000"
+                ToolTipService.ShowOnDisabled="True"
+                Click="button_Send_Click" />
+
+        <TextBlock x:Name="label_StatusBar"
+                   Grid.Row="3" Grid.ColumnSpan="2"
+                   Margin="0,4,0,0"
+                   MinHeight="15"
+                   TextTrimming="CharacterEllipsis" />
+    </Grid>
+</Window>
