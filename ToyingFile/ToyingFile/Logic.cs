@@ -1,0 +1,84 @@
+using System;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+
+namespace ToyingFile
+{
+    /// <summary>
+    /// ファイル内容から指定文字列を含む行を処理するロジック。DeleteStringFromContentは
+    /// WinForms版(CS_Form\ToyingFile\Logic.cs)をそのまま流用している。
+    ///
+    /// ファイルの読み書き(fio.LoadFile/SaveFile)は画面側に残し、ここには文字列だけを渡す・返す形にした。
+    ///
+    /// caseSensitive(大文字小文字を区別するか)は、以前は「削除対象の行かどうかを判定する IndexOf」
+    /// にしか効いておらず、実際に削除する String.Replace は常に大文字小文字を区別していた
+    /// (.NET Framework の String.Replace に大文字小文字を無視するオーバーロードが無いため)。
+    /// 区別しない場合は Regex.Replace を使うことで、判定と削除の挙動を揃えている。
+    /// </summary>
+    internal static class Logic
+    {
+        /// <summary>
+        /// 対象ファイルを列挙する(WinForms版ではForm1.GetTargetFilesにあったもの)。
+        /// filePatternが空なら全ファイル。includeSubDirectories=trueならサブフォルダも再帰的に探す。
+        /// </summary>
+        public static string[] GetTargetFiles(string directory, string filePattern, bool includeSubDirectories)
+        {
+            string searchPattern = (filePattern != string.Empty) ? filePattern : "*";
+            SearchOption searchOption = includeSubDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly;
+
+            return Directory.GetFiles(directory, searchPattern, searchOption);
+        }
+
+        /// <summary>削除文字列の入力欄(1行に1つ)を配列にする。空行は無視する。</summary>
+        public static string[] SplitDeleteStrings(string text)
+        {
+            return text.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        /// <summary>
+        /// ファイル内容(改行区切り)から、deleteStrings のいずれかを含む行を処理する。
+        /// deleteWholeLine=true なら行ごと空行にする。false なら該当文字列だけ削除する。
+        /// </summary>
+        public static string DeleteStringFromContent(string fileData, string[] deleteStrings, bool caseSensitive, bool deleteWholeLine)
+        {
+            StringComparison comparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+
+            // 大文字小文字を区別しない削除用の正規表現は、行ごとに作り直さず最初に1回だけ作る
+            Regex[] ignoreCaseRegexes = (caseSensitive || deleteWholeLine)
+                ? null
+                : deleteStrings.Select(s => new Regex(Regex.Escape(s), RegexOptions.IgnoreCase)).ToArray();
+
+            string[] lines = fileData.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+
+            for (int j = 0; j < lines.Length; j++)
+            {
+                for (int k = 0; k < deleteStrings.Length && lines[j] != string.Empty; k++)
+                {
+                    //削除対象の行か判別
+                    if (lines[j].IndexOf(deleteStrings[k], comparison) == -1)
+                    {
+                        continue;
+                    }
+
+                    if (deleteWholeLine)
+                    {
+                        // 一行削除&空行追加
+                        lines[j] = "";
+                    }
+                    else if (caseSensitive)
+                    {
+                        // 文字だけ削除ならReplace
+                        lines[j] = lines[j].Replace(deleteStrings[k], "");
+                    }
+                    else
+                    {
+                        lines[j] = ignoreCaseRegexes[k].Replace(lines[j], "");
+                    }
+                }
+            }
+
+            return string.Join(Environment.NewLine, lines);
+        }
+    }
+}
