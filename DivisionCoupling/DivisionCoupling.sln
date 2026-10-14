@@ -1,0 +1,31 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivisionCoupling", "DivisionCoupling\DivisionCoupling.csproj", "{5C2A9703-EF9D-4DAE-8799-C409124317B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DivisionCoupling.Tests", "Tests\DivisionCoupling.Tests\DivisionCoupling.Tests.csproj", "{6013AD17-4CAF-46D9-A0B6-4F564472738A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5C2A9703-EF9D-4DAE-8799-C409124317B3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5C2A9703-EF9D-4DAE-8799-C409124317B3}.Debug|x64.Build.0 = Debug|Any CPU
+		{5C2A9703-EF9D-4DAE-8799-C409124317B3}.Release|x64.ActiveCfg = Release|Any CPU
+		{5C2A9703-EF9D-4DAE-8799-C409124317B3}.Release|x64.Build.0 = Release|Any CPU
+		{6013AD17-4CAF-46D9-A0B6-4F564472738A}.Debug|x64.ActiveCfg = Debug|x64
+		{6013AD17-4CAF-46D9-A0B6-4F564472738A}.Debug|x64.Build.0 = Debug|x64
+		{6013AD17-4CAF-46D9-A0B6-4F564472738A}.Release|x64.ActiveCfg = Release|x64
+		{6013AD17-4CAF-46D9-A0B6-4F564472738A}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3E538CBE-E239-4AA8-8109-A1199F27094E}
+	EndGlobalSection
+EndGlobal
