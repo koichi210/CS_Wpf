@@ -1,0 +1,31 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebCamera", "WebCamera\WebCamera.csproj", "{9327EA79-E538-40A3-B38D-68626BED0C41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebCamera.Tests", "Tests\WebCamera.Tests\WebCamera.Tests.csproj", "{2206FE7D-FEA1-44CB-9AB9-0FE03745AD78}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9327EA79-E538-40A3-B38D-68626BED0C41}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9327EA79-E538-40A3-B38D-68626BED0C41}.Debug|x64.Build.0 = Debug|Any CPU
+		{9327EA79-E538-40A3-B38D-68626BED0C41}.Release|x64.ActiveCfg = Release|Any CPU
+		{9327EA79-E538-40A3-B38D-68626BED0C41}.Release|x64.Build.0 = Release|Any CPU
+		{2206FE7D-FEA1-44CB-9AB9-0FE03745AD78}.Debug|x64.ActiveCfg = Debug|x64
+		{2206FE7D-FEA1-44CB-9AB9-0FE03745AD78}.Debug|x64.Build.0 = Debug|x64
+		{2206FE7D-FEA1-44CB-9AB9-0FE03745AD78}.Release|x64.ActiveCfg = Release|x64
+		{2206FE7D-FEA1-44CB-9AB9-0FE03745AD78}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {78BADFB1-8BAC-4F5F-9012-A8E577780857}
+	EndGlobalSection
+EndGlobal

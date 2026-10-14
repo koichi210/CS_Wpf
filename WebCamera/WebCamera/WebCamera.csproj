@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{9327EA79-E538-40A3-B38D-68626BED0C41}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>WebCamera</RootNamespace>
+    <AssemblyName>WebCamera</AssemblyName>
+    <!-- OpenCvSharp4(4.13)はnetstandard2.0向けなので、WinForms版と同じv4.7.2にしている -->
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <!-- OpenCvSharp4同梱のRoslynアナライザーが要求するMicrosoft.CodeAnalysisを
+         VS2019同梱の古いcscが読み込めずCS8032が出る。コードには無関係の警告なので抑止する
+         (WinForms版と同じ対策。ExcludeAssetsはこの非SDK形式のPackageReferenceでは効かなかった実績あり)。 -->
+    <NoWarn>$(NoWarn);CS8032</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- WinForms版と同じく、packages.config ではなく PackageReference 形式で参照する
+         (packages.config + 壊れたHintPath参照の組み合わせで NuGet 復元が失敗した実績があるため)。 -->
+    <!-- OpenCvSharp4.runtime.win のネイティブDLL(OpenCvSharpExtern.dll)は x64 版しか同梱されない。
+         AnyCPU の exe は既定(Prefer32Bit=true)だと32bitで起動して DLL を読めないため、
+         上の Debug/Release 構成で Prefer32Bit=false にして64bitで起動させている。 -->
+    <!-- WinForms版が使っていた OpenCvSharp4.Extensions は Mat→System.Drawing.Bitmap 変換用。
+         WPF版は Mat の画素を自前で WriteableBitmap へ書き込む(FrameConverter)ので参照しない。 -->
+    <PackageReference Include="OpenCvSharp4" Version="4.13.0.20260627" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.13.0.20260627" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+  </ItemGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="App.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </ApplicationDefinition>
+    <Page Include="MainWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="App.xaml.cs">
+      <DependentUpon>App.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainWindow.xaml.cs">
+      <DependentUpon>MainWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CameraFrame.cs" />
+    <Compile Include="CaptureWorker.cs" />
+    <Compile Include="FrameConverter.cs" />
+    <Compile Include="IFrameSource.cs" />
+    <Compile Include="PreviewSurface.cs" />
+    <Compile Include="SnapshotFile.cs" />
+    <Compile Include="VideoCaptureSource.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\..\_Common\StcWpfExceptionGuard.cs">
+      <Link>_Common\StcWpfExceptionGuard.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- OpenCvSharp4.runtime.win は、動画ファイルやネット配信を読むためのFFmpegプラグイン
+       (opencv_videoio_ffmpeg*.dll、約28MB)も出力にコピーする。カメラはWindows標準の
+       Media Foundation / DirectShow で読むのでこのDLLは使わない。Release出力はgit管理なので、
+       リポジトリを重くしないようコピー対象から外している。動画ファイルを読む機能を足すときは消すこと。
+       (パッケージのパスに ..\..\ が入っていてItemGroupの静的なRemoveでは一致しないため、ファイル名で外す) -->
+  <Target Name="ExcludeOpenCvFfmpegPlugin" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <Content Remove="@(Content)" Condition="$([System.String]::Copy('%(Filename)').StartsWith('opencv_videoio_ffmpeg'))" />
+    </ItemGroup>
+  </Target>
+</Project>
