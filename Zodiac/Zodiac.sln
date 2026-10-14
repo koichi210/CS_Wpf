@@ -1,0 +1,31 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zodiac", "Zodiac\Zodiac.csproj", "{9E1CA9A6-2DB1-4319-BB5E-714226305B61}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Zodiac.Tests", "Tests\Zodiac.Tests\Zodiac.Tests.csproj", "{821E16B1-550A-4F43-9200-A49262055C06}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9E1CA9A6-2DB1-4319-BB5E-714226305B61}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9E1CA9A6-2DB1-4319-BB5E-714226305B61}.Debug|x64.Build.0 = Debug|Any CPU
+		{9E1CA9A6-2DB1-4319-BB5E-714226305B61}.Release|x64.ActiveCfg = Release|Any CPU
+		{9E1CA9A6-2DB1-4319-BB5E-714226305B61}.Release|x64.Build.0 = Release|Any CPU
+		{821E16B1-550A-4F43-9200-A49262055C06}.Debug|x64.ActiveCfg = Debug|x64
+		{821E16B1-550A-4F43-9200-A49262055C06}.Debug|x64.Build.0 = Debug|x64
+		{821E16B1-550A-4F43-9200-A49262055C06}.Release|x64.ActiveCfg = Release|x64
+		{821E16B1-550A-4F43-9200-A49262055C06}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {23CDB9D5-5923-4748-8271-574C4BC740B0}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,53 @@
+﻿<Window x:Class="Zodiac.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="干支閲覧"
+        Icon="Zodiac.ico"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterScreen"
+        UseLayoutRounding="True"
+        FontFamily="MS PGothic"
+        FontSize="12"
+        Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+    <!-- MFC版のダイアログ(250×169 DLU、MS Pゴシック9pt)を1DLU=1.5pxで再現。座標は.rcの値×1.5。
+         Tabキーの移動順は左上→右下の見た目の順にしている(MFC版は.rcの並びのままで「終了」が先頭だった) -->
+    <Canvas Width="375" Height="253.5">
+        <TextBlock Text="今年は" Canvas.Left="37.5" Canvas.Top="30" />
+        <ComboBox x:Name="comboBoxYear"
+                  Canvas.Left="76.5" Canvas.Top="25.5" Width="49.5" Height="20"
+                  MaxDropDownHeight="130" />
+        <TextBlock Text="年です" Canvas.Left="135" Canvas.Top="30" />
+
+        <GroupBox Header="閲覧基準" Focusable="False" IsTabStop="False"
+                  Canvas.Left="19.5" Canvas.Top="70.5" Width="172.5" Height="126" />
+        <RadioButton x:Name="radioBirth" Content="生まれた年" GroupName="mode"
+                     Canvas.Left="34.5" Canvas.Top="102" Width="73.5" Height="15"
+                     Checked="radioBirth_Checked" />
+        <RadioButton x:Name="radioAge" Content="年齢" GroupName="mode"
+                     Canvas.Left="34.5" Canvas.Top="129" Width="45" Height="15"
+                     Checked="radioAge_Checked" />
+        <RadioButton x:Name="radioZodiac" Content="干支" GroupName="mode"
+                     Canvas.Left="34.5" Canvas.Top="159" Width="45" Height="15"
+                     Checked="radioZodiac_Checked" />
+        <ComboBox x:Name="comboBoxList"
+                  Canvas.Left="109.5" Canvas.Top="126" Width="73.5" Height="20"
+                  MaxDropDownHeight="115" />
+
+        <!-- 元はES_MULTILINE | ES_READONLYで縦横スクロールバー付き(折り返さない) -->
+        <TextBox x:Name="textBoxPreview" IsReadOnly="True" TextWrapping="NoWrap"
+                 HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"
+                 Canvas.Left="201" Canvas.Top="19.5" Width="151.5" Height="177" />
+
+        <Button x:Name="buttonView" Content="閲覧基準で表示" IsDefault="True"
+                Canvas.Left="111" Canvas.Top="222" Width="84" Height="21"
+                Click="buttonView_Click" />
+        <Button x:Name="buttonAllView" Content="一覧表示"
+                Canvas.Left="205.5" Canvas.Top="222" Width="78" Height="21"
+                Click="buttonAllView_Click" />
+        <!-- 元はIDOKのPUSHBUTTON。Escで閉じるのもMFCのダイアログと同じにする -->
+        <Button x:Name="buttonOk" Content="終了" IsCancel="True"
+                Canvas.Left="295.5" Canvas.Top="222" Width="57" Height="21"
+                Click="buttonOk_Click" />
+    </Canvas>
+</Window>
