@@ -1,0 +1,22 @@
+<Window x:Class="MotionCapture.SampleCaptAreaWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="キャプチャ領域"
+        ResizeMode="NoResize"
+        SizeToContent="WidthAndHeight"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        FontFamily="Tahoma, MS UI Gothic"
+        FontSize="11"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display"
+        Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+        SourceInitialized="Window_SourceInitialized">
+    <!-- MFC版のダイアログ(IDD_SAMPLE_CAPT_AREA_DIALOG)を実測した大きさ(96dpiのピクセル)。
+         撮った画像は左上(11,11)に等倍で置く -->
+    <Canvas Width="726" Height="457">
+        <Image x:Name="image_Sample" Canvas.Left="11" Canvas.Top="11" Stretch="None" />
+        <Button x:Name="button_Close" Content="閉じる" Canvas.Left="641" Canvas.Top="423" Width="75" Height="23"
+                IsDefault="True" IsCancel="True" Click="button_Close_Click" />
+    </Canvas>
+</Window>

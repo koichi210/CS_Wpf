@@ -1,0 +1,31 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotionCapture", "MotionCapture\MotionCapture.csproj", "{73936E35-512D-49E1-8A3A-85901D1CE54A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MotionCapture.Tests", "Tests\MotionCapture.Tests\MotionCapture.Tests.csproj", "{96EB9AAB-5FD0-40AB-B7F1-B0C6058F5AF9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{73936E35-512D-49E1-8A3A-85901D1CE54A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{73936E35-512D-49E1-8A3A-85901D1CE54A}.Debug|x64.Build.0 = Debug|Any CPU
+		{73936E35-512D-49E1-8A3A-85901D1CE54A}.Release|x64.ActiveCfg = Release|Any CPU
+		{73936E35-512D-49E1-8A3A-85901D1CE54A}.Release|x64.Build.0 = Release|Any CPU
+		{96EB9AAB-5FD0-40AB-B7F1-B0C6058F5AF9}.Debug|x64.ActiveCfg = Debug|x64
+		{96EB9AAB-5FD0-40AB-B7F1-B0C6058F5AF9}.Debug|x64.Build.0 = Debug|x64
+		{96EB9AAB-5FD0-40AB-B7F1-B0C6058F5AF9}.Release|x64.ActiveCfg = Release|x64
+		{96EB9AAB-5FD0-40AB-B7F1-B0C6058F5AF9}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3D2977A1-67B6-4885-A862-56CF8EDED812}
+	EndGlobalSection
+EndGlobal
