@@ -258,5 +258,33 @@ namespace MotionCapture
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool DrawIcon(IntPtr hDC, int x, int y, IntPtr hIcon);
+
+        // ---- 圧縮の選択ダイアログをキャンセルで閉じるのに使う ----
+
+        public const uint WM_COMMAND = 0x0111;
+        public const int IDCANCEL = 2;
+
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public delegate bool EnumThreadWndProc(IntPtr hWnd, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool EnumThreadWindows(uint dwThreadId, EnumThreadWndProc lpfn, IntPtr lParam);
+
+        [DllImport("user32.dll")]
+        public static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        public static extern int GetClassName(IntPtr hWnd, System.Text.StringBuilder lpClassName, int nMaxCount);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool PostMessage(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("kernel32.dll")]
+        public static extern uint GetCurrentThreadId();
+
+        [DllImport("kernel32.dll")]
+        public static extern uint GetCurrentProcessId();
     }
 }

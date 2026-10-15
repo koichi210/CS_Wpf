@@ -12,7 +12,8 @@
         TextOptions.TextFormattingMode="Display"
         Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
         Loaded="Window_Loaded"
-        KeyDown="Window_KeyDown">
+        KeyDown="Window_KeyDown"
+        Closing="Window_Closing">
     <Window.Resources>
         <Style TargetType="TextBox">
             <Setter Property="VerticalContentAlignment" Value="Center" />

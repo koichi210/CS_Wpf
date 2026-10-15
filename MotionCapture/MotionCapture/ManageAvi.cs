@@ -30,6 +30,10 @@ namespace MotionCapture
         // 録画スレッドとUIスレッドの両方から読み書きする
         private volatile Boolean _executing = false;
         private Thread _thread;
+        // 圧縮の選択ダイアログを出している録画スレッドのID（出していないときは0）
+        private volatile uint _choosingThreadId = 0;
+        // 終了時に録画スレッドを待っている間、停止を伝え直す間隔
+        private const int _stopRetryMs = 100;
 
         // 設定
         private String _saveFileName = String.Empty;
@@ -56,8 +60,9 @@ namespace MotionCapture
         private IntPtr _compressAviStream = IntPtr.Zero;
 
         /// <summary>
-        /// 録画の終わりに出すメッセージ(本文, キャプション)。既定は録画スレッドから親なしのメッセージボックスを出す
-        /// （MFC版と同じく、画面を止めずに結果だけ知らせる）。テストでは差し替えて黙らせる。
+        /// 録画の終わりに出すメッセージ(本文, キャプション)。AVIファイルを閉じた後に録画スレッドから呼ぶ。
+        /// 既定は録画スレッドから親なしのメッセージボックスを出す。MainWindowはUIスレッドへ回して表示する
+        /// （ここで止まると録画スレッドが終われず、閉じるときに待ちきれないため）。テストでは差し替えて黙らせる。
         /// </summary>
         public Action<String, String> Notify { get; set; } = (text, caption) => MessageBox.Show(text, caption);
 
@@ -130,20 +135,82 @@ namespace MotionCapture
             _executing = true;
 
             // VfWはCOMを使うので、MFCのワーカースレッドと同じくSTAで動かす。
-            // MFC版はダイアログを閉じるとプロセスごと終わる(録画も打ち切られる)ので、バックグラウンドスレッドにする
+            // 閉じるときはStopRecordAndWaitで待つ。それ以外の終わり方(例外で落ちたとき等)でプロセスが残らないよう、
+            // バックグラウンドスレッドにしておく
             _thread = new Thread(RecordThreadProc);
             _thread.SetApartmentState(ApartmentState.STA);
             _thread.IsBackground = true;
             _thread.Start();
         }
 
+        // 停止を伝えるだけで、待たない
         public void StopRecord()
         {
             _executing = false;
+
+            // 圧縮の選択ダイアログを開いたままだと録画スレッドが終われないので、キャンセルで閉じる
+            CancelCompressorChoose();
         }
 
-        // MFC版は「記録停止」を押した時点でfalseを返していたが、録画スレッドはまだファイルを閉じている途中で、
-        // そこで次の録画を始めると前のスレッドが新しい録画のファイルを解放してしまう。
+        /// <summary>
+        /// 録画を止め、録画スレッドがAVIファイルを閉じ終わるまで待つ（ファイルを閉じるまでスレッドは終わらない）。
+        /// 録画していなければすぐ戻る。Notifyは待っている間に録画スレッドから呼ばれる。
+        /// </summary>
+        public void StopRecordAndWait()
+        {
+            StopRecord();
+            Thread thread = _thread;
+            if (thread == null)
+            {
+                return;
+            }
+
+            // 圧縮の選択ダイアログが開く直前に止めた場合はStopRecordで閉じきれないので、待っている間も伝え直す
+            while (!thread.Join(_stopRetryMs))
+            {
+                StopRecord();
+            }
+        }
+
+        // 圧縮の選択ダイアログ（親なしで録画スレッドが出す）が開いていれば、キャンセルで閉じる
+        private void CancelCompressorChoose()
+        {
+            uint threadId = _choosingThreadId;
+            if (threadId == 0)
+            {
+                return;
+            }
+            EnumThreadWindows(threadId, _cancelDialog, IntPtr.Zero);
+        }
+
+        private static readonly EnumThreadWndProc _cancelDialog = (hWnd, lParam) =>
+        {
+            // スレッドIDは使い回されるので、念のため自分のプロセスのダイアログだけにする
+            uint processId;
+            GetWindowThreadProcessId(hWnd, out processId);
+            System.Text.StringBuilder className = new System.Text.StringBuilder(16);
+            if (processId == GetCurrentProcessId() && GetClassName(hWnd, className, className.Capacity) > 0
+                && className.ToString() == "#32770")
+            {
+                PostMessage(hWnd, WM_COMMAND, (IntPtr)IDCANCEL, IntPtr.Zero);
+            }
+            return true;
+        };
+
+        // 録画中（圧縮の選択中も含む）。停止後にファイルを閉じている途中はfalse
+        public Boolean IsRecording()
+        {
+            return _executing;
+        }
+
+        // テスト用: 圧縮の選択ダイアログを出している（出そうとしている）ところか
+        internal Boolean IsChoosingCompressor
+        {
+            get { return _choosingThreadId != 0; }
+        }
+
+        // 「記録停止」を押した直後は、録画スレッドがまだファイルを閉じている途中のことがある。
+        // そこで次の録画を始めると前のスレッドが新しい録画のファイルを解放してしまうので、
         // スレッドが終わるまでは実行中とみなし、前の録画と重ならないようにする
         public Boolean IsExecution()
         {
@@ -320,7 +387,14 @@ namespace MotionCapture
             cv.dwFlags = ICMF_COMPVARS_VALID;
             cv.fccHandler = comptypeDIB;
             cv.lQ = ICQUALITY_DEFAULT;
-            if (!ICCompressorChoose(IntPtr.Zero, ICMF_CHOOSE_DATARATE | ICMF_CHOOSE_KEYFRAME, ref _bitmapInfo, IntPtr.Zero, ref cv, IntPtr.Zero))
+
+            // 選んでいる間に停止されたらStopRecordがダイアログを閉じられるよう、このスレッドを覚えておく。
+            // 覚える前に停止されていたら、ダイアログを出さずにキャンセル扱いにする
+            _choosingThreadId = GetCurrentThreadId();
+            Boolean chosen = _executing
+                && ICCompressorChoose(IntPtr.Zero, ICMF_CHOOSE_DATARATE | ICMF_CHOOSE_KEYFRAME, ref _bitmapInfo, IntPtr.Zero, ref cv, IntPtr.Zero);
+            _choosingThreadId = 0;
+            if (!chosen)
             {
                 return AviError.CancelCompress;
             }

@@ -10,7 +10,8 @@ namespace MotionCapture.Tests
     /// <summary>
     /// ManageAvi（VfWでの録画）のテスト。小さい領域・数フレームを一時フォルダへ非圧縮で録画し、
     /// ファイルができること・VfWで読み戻したヘッダー(フレームレート・フレーム数・大きさ)が設定どおりかを確かめる。
-    /// 圧縮(ICCompressorChoose)はダイアログが出るので、テストではSetCompress(false)にする。
+    /// 圧縮(ICCompressorChoose)はダイアログが出るので、テストではSetCompress(false)にする
+    /// （止めたときに選択ダイアログを閉じられるかのテストだけは圧縮ありで動かし、キャンセルさせる）。
     /// </summary>
     [TestClass]
     public class ManageAviTests
@@ -198,6 +199,102 @@ namespace MotionCapture.Tests
         }
 
         [TestMethod]
+        public void 録画中にStopRecordAndWaitするとファイルを閉じ終わってから戻る()
+        {
+            String path = Path.Combine(_workDir, "wait.avi");
+            ManageAvi avi = MakeAvi(path, 8, 8, 10, 100);
+            avi.SetSkipFrame(10);
+            String text = null;
+            avi.Notify = (t, c) => text = t;
+
+            avi.StartRecord();
+            Thread.Sleep(300);
+            Assert.IsTrue(avi.IsRecording());
+            RunWithTimeout(avi.StopRecordAndWait);
+
+            // 戻った時点で録画スレッドは終わっていて、ファイルはそのまま読める（閉じられていないと壊れたAVIになる）
+            Assert.IsFalse(avi.IsExecution());
+            Assert.AreEqual("ファイルを保存しました。", text);
+            int length = AviReader.Read(path).Length;
+            Assert.IsTrue(length > 0 && length < 1000, "フレーム数: " + length);
+        }
+
+        [TestMethod]
+        public void 停止直後の後片付け中でもStopRecordAndWaitはファイルを閉じ終わるまで待つ()
+        {
+            String path = Path.Combine(_workDir, "cleanup.avi");
+            ManageAvi avi = MakeAvi(path, 8, 8, 10, 100);
+            avi.SetSkipFrame(10);
+            avi.Notify = (t, c) => { };
+
+            avi.StartRecord();
+            Thread.Sleep(300);
+            avi.StopRecord();
+            Assert.IsFalse(avi.IsRecording(), "停止後は録画中ではない（閉じるときに確認を出さない）");
+            RunWithTimeout(avi.StopRecordAndWait);
+
+            Assert.IsFalse(avi.IsExecution());
+            Assert.IsTrue(AviReader.Read(path).Length > 0);
+        }
+
+        [TestMethod]
+        public void 録画していなければStopRecordAndWaitはすぐ戻る()
+        {
+            ManageAvi avi = new ManageAvi();
+
+            RunWithTimeout(avi.StopRecordAndWait);
+
+            Assert.IsFalse(avi.IsRecording());
+            Assert.IsFalse(avi.IsExecution());
+        }
+
+        [TestMethod]
+        public void 圧縮の選択ダイアログを開いている間に止めるとキャンセルして終わる()
+        {
+            String path = Path.Combine(_workDir, "choose.avi");
+            ManageAvi avi = MakeAvi(path, 8, 8, 10, 100);
+            avi.SetCompress(true);
+            String text = null;
+            String caption = null;
+            avi.Notify = (t, c) => { text = t; caption = c; };
+
+            avi.StartRecord();
+            Stopwatch watch = Stopwatch.StartNew();
+            while (!avi.IsChoosingCompressor && watch.Elapsed < TimeSpan.FromSeconds(10))
+            {
+                Thread.Sleep(20);
+            }
+            Assert.IsTrue(avi.IsChoosingCompressor, "圧縮の選択ダイアログを出すところまで進む");
+            Thread.Sleep(500);  // ダイアログが開ききるのを待つ
+            RunWithTimeout(avi.StopRecordAndWait);
+
+            Assert.IsFalse(avi.IsExecution());
+            Assert.AreEqual("圧縮設定がキャンセルされました。", text);
+            Assert.AreEqual("Error", caption);
+        }
+
+        [TestMethod]
+        public void 開始してすぐ止めても圧縮の選択ダイアログで止まったままにならない()
+        {
+            // 選択ダイアログが開く前後のどこで止めても、待っている間に伝え直すので必ず終わる
+            for (int i = 0; i < 3; i++)
+            {
+                String path = Path.Combine(_workDir, "quick" + i + ".avi");
+                ManageAvi avi = MakeAvi(path, 8, 8, 10, 100);
+                avi.SetCompress(true);
+                String text = null;
+                avi.Notify = (t, c) => text = t;
+
+                avi.StartRecord();
+                Thread.Sleep(i * 50);
+                RunWithTimeout(avi.StopRecordAndWait);
+
+                Assert.IsFalse(avi.IsExecution());
+                Assert.AreEqual("圧縮設定がキャンセルされました。", text);
+            }
+        }
+
+        [TestMethod]
         public void コマ送りはフレーム間の待ち時間に直す()
         {
             ManageAvi avi = new ManageAvi();
@@ -235,6 +332,33 @@ namespace MotionCapture.Tests
             Assert.AreEqual("Streamが生成できませんでした。", ManageAvi.MakeErrorMessage(AviError.CreateStream, "a"));
             Assert.AreEqual("圧縮設定がキャンセルされました。", ManageAvi.MakeErrorMessage(AviError.CancelCompress, "a"));
             Assert.AreEqual("圧縮Streamが生成できませんでした。", ManageAvi.MakeErrorMessage(AviError.CreateCompressStream, "a"));
+        }
+
+        // 待ち続けて止まらないときはテストを失敗にする（録画スレッドはバックグラウンドなので、テストの終了で消える）
+        private static void RunWithTimeout(Action action)
+        {
+            Exception error = null;
+            Thread thread = new Thread(() =>
+            {
+                try
+                {
+                    action();
+                }
+                catch (Exception ex)
+                {
+                    error = ex;
+                }
+            });
+            thread.IsBackground = true;
+            thread.Start();
+            if (!thread.Join(TimeSpan.FromSeconds(30)))
+            {
+                Assert.Fail("録画スレッドの終了を待ちきれない");
+            }
+            if (error != null)
+            {
+                throw new AssertFailedException(error.ToString());
+            }
         }
 
         private static void WaitForStop(ManageAvi avi)

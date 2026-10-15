@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,6 +18,7 @@ namespace MotionCapture
 
         private readonly ManageAvi _avi = new ManageAvi();
         private readonly CaptureSettings _settings = new CaptureSettings();
+        private Boolean _closing = false;   // 終了処理中（録画の結果を表示しない）
 
         public MainWindow()
         {
@@ -24,6 +26,15 @@ namespace MotionCapture
 
             // MFCのOnInitDialog → UpdateData(FALSE) と同じく、初期値を入力欄に出す
             UpdateControls();
+
+            // 録画の結果はUIスレッドで出す。録画スレッドはファイルを閉じたら投げるだけですぐ終わるので、閉じるときに待てる
+            _avi.Notify = (text, caption) => Dispatcher.BeginInvoke(new Action(() => ShowRecordResult(text, caption)));
+
+            // シャットダウン・ログオフでは、この後すぐプロセスごと終了させられるので、確認せずに止めてファイルを閉じさせる
+            if (Application.Current != null)
+            {
+                Application.Current.SessionEnding += (s, e) => StopRecordAndWait();
+            }
         }
 
         // ダイアログと同じく、最初の入力欄にフォーカスを置いて全選択しておく
@@ -80,6 +91,51 @@ namespace MotionCapture
         private void button_RecordStop_Click(object sender, RoutedEventArgs e)
         {
             _avi.StopRecord();
+        }
+
+        // 録画中のまま閉じると録画スレッドごと打ち切られてAVIファイルが壊れるので、止めてファイルを閉じ終わってから閉じる
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            if (!StopRecordForClose())
+            {
+                e.Cancel = true;
+            }
+        }
+
+        // 録画中なら確認のうえ中断し、ファイルを閉じ終わるまで待つ（閉じてよければ true）
+        private Boolean StopRecordForClose()
+        {
+            // 停止後にファイルを閉じている途中なら、確認はせずに待つだけにする
+            if (_avi.IsRecording())
+            {
+                if (MessageBox.Show(this, "実行中です。中断して閉じますか？", "Warning", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+                {
+                    return false;
+                }
+            }
+
+            StopRecordAndWait();
+            return true;
+        }
+
+        // 確認せずに中断し、ファイルを閉じ終わるまで待つ
+        private void StopRecordAndWait()
+        {
+            _closing = true;
+            IsEnabled = false;  // 待っている間に操作させない
+            _avi.StopRecordAndWait();
+            IsEnabled = true;
+        }
+
+        // 録画スレッドからの結果（UIスレッドで呼ばれる）。ファイルはもう閉じてある
+        private void ShowRecordResult(String text, String caption)
+        {
+            // 閉じる途中は終了を妨げないよう、何も表示しない（「保存しました」も、閉じると答えた後には出さない）
+            if (_closing)
+            {
+                return;
+            }
+            MessageBox.Show(this, text, caption, MessageBoxButton.OK);
         }
 
         private void button_CaptAreaSample_Click(object sender, RoutedEventArgs e)
