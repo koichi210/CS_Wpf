@@ -4,7 +4,6 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using Microsoft.Win32;
 
 namespace DivisionCoupling
 {
@@ -24,6 +23,9 @@ namespace DivisionCoupling
         private volatile Boolean _running = false;          // 「停止」でワーカースレッドに中断を伝える
         private volatile Boolean _closing = false;          // 終了処理中（結果のメッセージを出さない）
         private Thread _worker;
+
+        // ファイル選択ダイアログ（選んだパス、キャンセルなら null を返す）。テストでは差し替えて、ダイアログを出さずに確認する
+        internal Func<Window, String> ShowOpenFileDialog { get; set; } = FileOpenDialog.Show;
 
         public MainWindow()
         {
@@ -225,17 +227,13 @@ namespace DivisionCoupling
             _error = Logic.Merge(_destPath, () => _running);
         }
 
+        // MFC版のOFN_CREATEPROMPTと同じく、無いファイル名なら「作成しますか?」を聞くダイアログで選ばせる
         private void BrowseFile(TextBox textBox)
         {
-            // MFC版のOFN_CREATEPROMPT（無いファイル名も入力できる）に合わせ、存在チェックはしない
-            OpenFileDialog dialog = new OpenFileDialog
+            String path = ShowOpenFileDialog(this);
+            if (path != null)
             {
-                Filter = "*.*|*.*|全て(*.*)|*.*",
-                CheckFileExists = false,
-            };
-            if (dialog.ShowDialog(this) == true)
-            {
-                textBox.Text = dialog.FileName;
+                textBox.Text = path;
             }
         }
 

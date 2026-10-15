@@ -1,6 +1,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StandardTemplate.Wpf.Tests;
 
@@ -57,6 +58,60 @@ namespace DivisionCoupling.Tests
         }
 
         [TestMethod]
+        public void 参照で選んだファイル名が分割と結合の欄に入る()
+        {
+            StaRunner.Run(() =>
+            {
+                MainWindow window = new MainWindow();
+                Window owner = null;
+                window.ShowOpenFileDialog = w =>
+                {
+                    owner = w;
+                    return @"C:\work\new.bin";
+                };
+
+                ClickButton(window, "button_SplitBrowse");
+                Assert.AreSame(window, owner);
+                Assert.AreEqual(@"C:\work\new.bin", ((TextBox)window.FindName("textBox_SplitFileName")).Text);
+
+                ClickButton(window, "button_MergeBrowse");
+                Assert.AreEqual(@"C:\work\new.bin", ((TextBox)window.FindName("textBox_MergeFileName")).Text);
+            });
+        }
+
+        [TestMethod]
+        public void 参照をキャンセルしたら欄はそのまま()
+        {
+            StaRunner.Run(() =>
+            {
+                MainWindow window = new MainWindow();
+                TextBox split = (TextBox)window.FindName("textBox_SplitFileName");
+                TextBox merge = (TextBox)window.FindName("textBox_MergeFileName");
+                split.Text = "before_split";
+                merge.Text = "before_merge";
+                window.ShowOpenFileDialog = w => null;
+
+                ClickButton(window, "button_SplitBrowse");
+                ClickButton(window, "button_MergeBrowse");
+
+                Assert.AreEqual("before_split", split.Text);
+                Assert.AreEqual("before_merge", merge.Text);
+            });
+        }
+
+        [TestMethod]
+        public void 参照ボタンは作成するか聞くダイアログを使う()
+        {
+            StaRunner.Run(() =>
+            {
+                MainWindow window = new MainWindow();
+                Func<Window, String> expected = FileOpenDialog.Show;
+
+                Assert.AreEqual(expected, window.ShowOpenFileDialog);
+            });
+        }
+
+        [TestMethod]
         public void 大きさは変えられず最小化だけできる()
         {
             StaRunner.Run(() =>
@@ -66,6 +121,11 @@ namespace DivisionCoupling.Tests
                 Assert.AreEqual(ResizeMode.CanMinimize, window.ResizeMode);
                 Assert.AreEqual(SizeToContent.WidthAndHeight, window.SizeToContent);
             });
+        }
+
+        private static void ClickButton(MainWindow window, String name)
+        {
+            ((Button)window.FindName(name)).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
         }
     }
 }

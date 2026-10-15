@@ -52,6 +52,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileOpenDialogTests.cs" />
     <Compile Include="LogicTests.cs" />
     <Compile Include="MainWindowTests.cs" />
     <Compile Include="..\..\..\_Common\Wpf\Tests\StaRunner.cs">
