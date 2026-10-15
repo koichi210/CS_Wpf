@@ -14,16 +14,50 @@ namespace TrimHtmlData.Tests
     public class LogicTests
     {
         [TestMethod]
-        public void GetTrimLineは数値文字列をそのまま返す()
+        public void TryGetTrimLineは数値文字列をそのまま返す()
         {
-            Assert.AreEqual(3, Logic.GetTrimLine("3"));
+            int trimLineNum;
+            Assert.IsTrue(Logic.TryGetTrimLine("3", out trimLineNum));
+            Assert.AreEqual(3, trimLineNum);
         }
 
         [TestMethod]
-        public void GetTrimLineは0や空文字なら1を返す()
+        public void TryGetTrimLineは0や空文字なら1を返す()
         {
-            Assert.AreEqual(1, Logic.GetTrimLine("0"));
-            Assert.AreEqual(1, Logic.GetTrimLine(""));
+            int trimLineNum;
+            Assert.IsTrue(Logic.TryGetTrimLine("0", out trimLineNum));
+            Assert.AreEqual(1, trimLineNum);
+            Assert.IsTrue(Logic.TryGetTrimLine("", out trimLineNum));
+            Assert.AreEqual(1, trimLineNum);
+            Assert.IsTrue(Logic.TryGetTrimLine("  ", out trimLineNum));
+            Assert.AreEqual(1, trimLineNum);
+        }
+
+        [TestMethod]
+        public void TryGetTrimLineは数字以外や負の数なら例外にせずfalseを返す()
+        {
+            int trimLineNum;
+            Assert.IsFalse(Logic.TryGetTrimLine("abc", out trimLineNum));
+            Assert.IsFalse(Logic.TryGetTrimLine("1.5", out trimLineNum));
+            Assert.IsFalse(Logic.TryGetTrimLine("３", out trimLineNum));
+            Assert.IsFalse(Logic.TryGetTrimLine("-1", out trimLineNum));
+            Assert.IsFalse(Logic.TryGetTrimLine("99999999999", out trimLineNum));
+        }
+
+        [TestMethod]
+        public void SplitLinesはCRLFとLFとCRのどれでも行に分け空行は捨てる()
+        {
+            CollectionAssert.AreEqual(new[] { "a", "b", "c", "d", "e" },
+                Logic.SplitLines("a\r\nb\nc\rd\r\n\r\n\n\re"));
+        }
+
+        [TestMethod]
+        public void LFだけやCRだけのHTMLでも行ごとに検索できる()
+        {
+            string expected = "<title>A</title>" + Environment.NewLine + "<body>" + Environment.NewLine + Environment.NewLine + Environment.NewLine;
+
+            Assert.AreEqual(expected, Logic.GetSearchString("<html>\n<title>A</title>\n<body>\n</html>", "<title>", 2, StringComparison.OrdinalIgnoreCase, firstWordOnly: false));
+            Assert.AreEqual(expected, Logic.GetSearchString("<html>\r<title>A</title>\r<body>\r</html>", "<title>", 2, StringComparison.OrdinalIgnoreCase, firstWordOnly: false));
         }
 
         [TestMethod]
