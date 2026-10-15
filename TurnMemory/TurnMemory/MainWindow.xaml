@@ -23,8 +23,9 @@
         <Button x:Name="buttonAns" Content="御明算" IsEnabled="False"
                 Canvas.Left="310.5" Canvas.Top="172.5" Width="75" Height="21"
                 Click="buttonAns_Click" />
-        <!-- 元はIDOKのDEFPUSHBUTTON(Enterで終了)。Escで閉じるのもMFCのダイアログと同じにする -->
-        <Button x:Name="buttonOk" Content="終了" IsDefault="True" IsCancel="True"
+        <!-- 元はIDOKのDEFPUSHBUTTONで、マスに入力中のEnterでも終了してしまっていたため既定ボタンにはしない。
+             Escで閉じるのはMFCのダイアログと同じ -->
+        <Button x:Name="buttonOk" Content="終了" IsCancel="True"
                 Canvas.Left="310.5" Canvas.Top="199.5" Width="75" Height="21"
                 Click="buttonOk_Click" />
         <TextBlock x:Name="textTitle" Text="Title Text" TextAlignment="Center"

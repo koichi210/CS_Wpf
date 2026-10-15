@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StandardTemplate.Wpf.Tests;
@@ -8,7 +9,7 @@ namespace TurnMemory.Tests
 {
     /// <summary>
     /// 出題画面・解答画面を実際に生成して、ボタン操作とタイマ1回分の処理で画面がMFC版と同じように変わるかを確認するテスト。
-    /// タイマは待たずに ShowProc/WaitProc を直接呼んで進める。保存する設定は無いが、念のため Close() はしない。
+    /// タイマは待たずに ShowProc/WaitProc を直接呼んで進める。保存する設定は無いが、念のため Close() はしない(フォーカスを見るために Show() したテストだけ最後に閉じる)。
     /// </summary>
     [TestClass]
     public class MainWindowTests
@@ -31,7 +32,7 @@ namespace TurnMemory.Tests
                 Assert.AreEqual("4 × 4", window.comboBoxProblem.SelectedItem);
                 Assert.AreEqual("スタート", window.buttonStart.Content);
                 Assert.IsFalse(window.buttonAns.IsEnabled);
-                Assert.IsTrue(window.buttonOk.IsDefault);
+                Assert.IsFalse(window.buttonOk.IsDefault);
                 Assert.IsTrue(window.buttonOk.IsCancel);
 
                 Assert.AreEqual(Visibility.Visible, window.Cell(3, 3).Visibility);
@@ -174,6 +175,31 @@ namespace TurnMemory.Tests
 
                 Assert.AreEqual("全問正解！！", window.textTitle.Text);
                 Assert.AreEqual("16", window.CellText(3, 3).Text);
+            });
+        }
+
+        [TestMethod]
+        public void マスでEnterを押すと次のマスへ進み_画面は閉じない()
+        {
+            StaRunner.Run(() =>
+            {
+                MainWindow window = new MainWindow(new LogicTests.NoSwapRandom());
+                // フォーカスを動かすには画面が表示されている必要がある。スタート→ストップでマスを入力可能にする
+                window.Show();
+                Click(window.buttonStart);
+                Click(window.buttonStart);
+                window.Cell(0, 0).Focus();
+
+                KeyEventArgs enter = new KeyEventArgs(Keyboard.PrimaryDevice, PresentationSource.FromVisual(window), 0, Key.Enter)
+                {
+                    RoutedEvent = Keyboard.PreviewKeyDownEvent,
+                };
+                window.Cell(0, 0).RaiseEvent(enter);
+
+                Assert.IsTrue(enter.Handled);
+                Assert.IsTrue(window.Cell(0, 1).IsKeyboardFocused);
+                Assert.IsTrue(window.IsVisible);
+                window.Close();
             });
         }
     }

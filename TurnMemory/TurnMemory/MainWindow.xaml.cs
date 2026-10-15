@@ -204,11 +204,17 @@ namespace TurnMemory
             // 全角数字などがIMEから入ってこないよう、IMEは使わせない
             InputMethod.SetIsInputMethodEnabled(cell, false);
             cell.PreviewTextInput += (s, e) => e.Handled = !IsDigits(e.Text);
-            // スペースはPreviewTextInputを通らずに入力されるので、キーで止める
+            // スペースはPreviewTextInputを通らずに入力されるので、キーで止める。
+            // Enterは次のマスへ進める(MFC版はEnterで終了ボタンが押されて、入力中にアプリが閉じてしまっていた)
             cell.PreviewKeyDown += (s, e) =>
             {
                 if (e.Key == Key.Space)
                 {
+                    e.Handled = true;
+                }
+                else if (e.Key == Key.Enter)
+                {
+                    ((TextBox)s).MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
                     e.Handled = true;
                 }
             };
