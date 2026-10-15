@@ -12,6 +12,7 @@ namespace DivisionCoupling
     /// GetOpenFileName を直接呼ぶ。存在しないファイル名で「開く」を押すと Windows 自身が
     /// 「(ファイル名) このファイルは存在しません。作成しますか?」を出し、「いいえ」ならダイアログに戻る。
     /// 文言も動きも Windows 標準のままなので、MFC版と同じになる（ファイル自体は作らない）。
+    /// ただし既定の拡張子だけはMFC版に合わせない（理由は CreateOpenFileName のコメント）。
     /// </summary>
     internal static class FileOpenDialog
     {
@@ -71,6 +72,28 @@ namespace DivisionCoupling
             return filter.Replace('|', '\0') + "\0";
         }
 
+        // GetOpenFileNameへ渡す構造体を作る（ダイアログを出さずにテストで中身を確かめられるよう分けている）。
+        // lpstrDefExt（既定の拡張子）はわざと設定しない。MFC版は CFileDialog の既定拡張子に "*.*" を渡していて、
+        // それがそのまま IFileDialog::SetDefaultExtension("*.*") に渡る。実際に動かすと、拡張子なしで
+        // まだ無い名前（"sample" など）を入れると「ファイル名は有効ではありません。」で止められ、
+        // 「作成しますか?」も出ず選べない（同じフォルダに "sample.txt" があっても選ばれない）。
+        // 拡張子なしで既にあるファイルや、拡張子付きの名前のときは何も付かないので、"*.*" に役立つ効き目は無い。
+        // MFC版の不具合なので真似せず、入れた名前をそのまま使う（拡張子を勝手に付けない）
+        internal static OPENFILENAME CreateOpenFileName(IntPtr hwndOwner, IntPtr filter, IntPtr file)
+        {
+            return new OPENFILENAME
+            {
+                lStructSize = Marshal.SizeOf(typeof(OPENFILENAME)),
+                hwndOwner = hwndOwner,
+                lpstrFilter = filter,
+                nFilterIndex = 1,
+                lpstrFile = file,
+                nMaxFile = FileBufferLength,
+                Flags = Flags,
+                lpstrDefExt = IntPtr.Zero,
+            };
+        }
+
         /// <summary>
         /// ダイアログを出し、選ばれたファイルのフルパスを返す。キャンセル（または失敗）なら null。
         /// </summary>
@@ -83,16 +106,8 @@ namespace DivisionCoupling
                 // MFC版と同じく、毎回ファイル名は空で開く
                 Marshal.WriteInt16(file, 0);
 
-                OPENFILENAME ofn = new OPENFILENAME
-                {
-                    lStructSize = Marshal.SizeOf(typeof(OPENFILENAME)),
-                    hwndOwner = owner != null ? new WindowInteropHelper(owner).Handle : IntPtr.Zero,
-                    lpstrFilter = filter,
-                    nFilterIndex = 1,
-                    lpstrFile = file,
-                    nMaxFile = FileBufferLength,
-                    Flags = Flags,
-                };
+                IntPtr hwndOwner = owner != null ? new WindowInteropHelper(owner).Handle : IntPtr.Zero;
+                OPENFILENAME ofn = CreateOpenFileName(hwndOwner, filter, file);
                 if (!GetOpenFileName(ref ofn))
                 {
                     return null;
