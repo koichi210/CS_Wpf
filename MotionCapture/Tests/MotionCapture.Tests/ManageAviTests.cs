@@ -156,6 +156,7 @@ namespace MotionCapture.Tests
 
             Assert.AreEqual(AviError.FileOpen, err);
             Assert.AreEqual("AVIファイルが開けませんでした。" + path, ManageAvi.MakeErrorMessage(err, path));
+            Assert.IsFalse(File.Exists(path));
         }
 
         [TestMethod]
@@ -266,11 +267,69 @@ namespace MotionCapture.Tests
             }
             Assert.IsTrue(avi.IsChoosingCompressor, "圧縮の選択ダイアログを出すところまで進む");
             Thread.Sleep(500);  // ダイアログが開ききるのを待つ
+            Assert.IsFalse(File.Exists(path), "保存先のファイルは圧縮方式が決まってから作る");
             RunWithTimeout(avi.StopRecordAndWait);
 
             Assert.IsFalse(avi.IsExecution());
             Assert.AreEqual("圧縮設定がキャンセルされました。", text);
             Assert.AreEqual("Error", caption);
+            Assert.IsFalse(File.Exists(path), "キャンセルなら保存先に空のファイルを残さない");
+        }
+
+        [TestMethod]
+        public void 圧縮の選択をキャンセルしても既存のファイルの中身は変わらない()
+        {
+            String path = Path.Combine(_workDir, "existing.avi");
+            byte[] content = Encoding.ASCII.GetBytes("ORIGINAL-CONTENT");
+            File.WriteAllBytes(path, content);
+            ManageAvi avi = MakeAvi(path, 8, 8, 10, 100);
+            avi.SetCompress(true);
+            String text = null;
+            avi.Notify = (t, c) => text = t;
+
+            avi.StartRecord();
+            Stopwatch watch = Stopwatch.StartNew();
+            while (!avi.IsChoosingCompressor && watch.Elapsed < TimeSpan.FromSeconds(10))
+            {
+                Thread.Sleep(20);
+            }
+            Thread.Sleep(500);  // ダイアログが開ききるのを待つ
+            RunWithTimeout(avi.StopRecordAndWait);
+
+            Assert.AreEqual("圧縮設定がキャンセルされました。", text);
+            CollectionAssert.AreEqual(content, File.ReadAllBytes(path), "以前は0バイトに切り詰められていた");
+        }
+
+        [TestMethod]
+        public void 開始してすぐ止めても1フレームは書いて読めるAVIにする()
+        {
+            String path = Path.Combine(_workDir, "quickstop.avi");
+            ManageAvi avi = MakeAvi(path, 8, 8, 10, 100);
+            avi.SetSkipFrame(10);
+            String text = null;
+            avi.Notify = (t, c) => text = t;
+
+            avi.StartRecord();
+            avi.StopRecord();
+            WaitForStop(avi);
+
+            Assert.AreEqual("ファイルを保存しました。", text);
+            Assert.IsTrue(AviReader.Read(path).Length >= 1, "フレームのないAVIを残さない");
+        }
+
+        [TestMethod]
+        public void 録画秒数が0でも1フレームは書く()
+        {
+            String path = Path.Combine(_workDir, "zero.avi");
+            ManageAvi avi = MakeAvi(path, 8, 8, 10, 0);
+            AviError err = AviError.FileOpen;
+            Boolean completed = false;
+
+            RunSta(() => err = avi.RecordSync(out completed));
+
+            Assert.AreEqual(AviError.Success, err);
+            Assert.IsTrue(completed);
+            Assert.AreEqual(1, AviReader.Read(path).Length);
         }
 
         [TestMethod]
@@ -291,6 +350,7 @@ namespace MotionCapture.Tests
 
                 Assert.IsFalse(avi.IsExecution());
                 Assert.AreEqual("圧縮設定がキャンセルされました。", text);
+                Assert.IsFalse(File.Exists(path), "キャンセルなら保存先に空のファイルを残さない");
             }
         }
 

@@ -1,7 +1,13 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using StandardTemplate.Wpf.Tests;
 
@@ -9,11 +15,34 @@ namespace MotionCapture.Tests
 {
     /// <summary>
     /// MainWindow / SampleCaptAreaWindow を実際に生成して、MFC版のダイアログと同じ構成になっているかを確認するテスト。
-    /// 表示はせず、作って中身を見るだけにする（録画は走らせない）。
+    /// 表示はせず、作って中身を見るだけにする。
+    /// 確認と録画の結果の出し方のテストだけは、一時フォルダへ非圧縮で小さく録画し、メッセージボックスを差し替えて確かめる。
     /// </summary>
     [TestClass]
     public class MainWindowTests
     {
+        private const String _closeConfirm = "実行中です。中断して閉じますか？";
+        private const String _stopConfirm = "実行中です。中断しますか？";
+        private const String _timeoutMessage = "タイムアウトが発生しました。\n記録を停止しファイルを保存しました。";
+
+        private String _workDir;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            _workDir = Path.Combine(Path.GetTempPath(), "MotionCaptureTests_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(_workDir);
+        }
+
+        [TestCleanup]
+        public void Cleanup()
+        {
+            if (Directory.Exists(_workDir))
+            {
+                Directory.Delete(_workDir, true);
+            }
+        }
+
         [TestMethod]
         public void 起動直後はMFC版と同じ初期値が入っている()
         {
@@ -70,6 +99,165 @@ namespace MotionCapture.Tests
                 Assert.IsTrue(close.IsDefault);
                 Assert.IsTrue(close.IsCancel);
             });
+        }
+
+        // ---- 確認を出している間に届いた録画の結果 ----
+
+        [TestMethod]
+        public void 閉じる確認の間に録画が終わったら確認に重ねず_いいえの後に結果を出す()
+        {
+            String path = Path.Combine(_workDir, "close_no.avi");
+            StaRunner.Run(() =>
+            {
+                MainWindow window = new MainWindow();
+                List<String> shown = new List<String>();
+                ManageAvi avi = null;
+                window.ShowMessage = (text, caption, button) =>
+                {
+                    shown.Add(text);
+                    if (button == MessageBoxButton.YesNo)
+                    {
+                        // 確認を出している間に録画が最後まで進み、結果が届く
+                        WaitForRecordAndDoEvents(avi);
+                        Assert.AreEqual(1, shown.Count, "確認の上に結果を重ねて出さない");
+                        return MessageBoxResult.No;
+                    }
+                    return MessageBoxResult.OK;
+                };
+                avi = StartRecording(window, path, 1);
+
+                Assert.IsFalse(window.StopRecordForClose(), "いいえなら閉じない");
+
+                CollectionAssert.AreEqual(new[] { _closeConfirm, _timeoutMessage }, shown);
+                DoEvents();
+                Assert.AreEqual(2, shown.Count, "預かった結果は1回だけ出す");
+            });
+            Assert.AreEqual(10, AviReader.Read(path).Length);
+        }
+
+        [TestMethod]
+        public void 閉じる確認の間に録画が終わっても_はいなら結果を出さずに閉じられる()
+        {
+            String path = Path.Combine(_workDir, "close_yes.avi");
+            StaRunner.Run(() =>
+            {
+                MainWindow window = new MainWindow();
+                List<String> shown = new List<String>();
+                ManageAvi avi = null;
+                window.ShowMessage = (text, caption, button) =>
+                {
+                    shown.Add(text);
+                    if (button == MessageBoxButton.YesNo)
+                    {
+                        WaitForRecordAndDoEvents(avi);
+                        return MessageBoxResult.Yes;
+                    }
+                    return MessageBoxResult.OK;
+                };
+                avi = StartRecording(window, path, 1);
+
+                // 録画はもう終わっているので、待ち続けずにすぐ戻る
+                Assert.IsTrue(window.StopRecordForClose(), "はいなら閉じる");
+
+                DoEvents();
+                CollectionAssert.AreEqual(new[] { _closeConfirm }, shown, "閉じると答えたら結果は出さない");
+                Assert.IsFalse(avi.IsExecution());
+            });
+            Assert.AreEqual(10, AviReader.Read(path).Length);
+        }
+
+        [TestMethod]
+        public void 記録開始の確認の間に録画が終わったら確認に重ねず_答えた後に結果を出す()
+        {
+            foreach (MessageBoxResult answer in new[] { MessageBoxResult.No, MessageBoxResult.Yes })
+            {
+                String path = Path.Combine(_workDir, "start_" + answer + ".avi");
+                StaRunner.Run(() =>
+                {
+                    MainWindow window = new MainWindow();
+                    List<String> shown = new List<String>();
+                    ManageAvi avi = null;
+                    window.ShowMessage = (text, caption, button) =>
+                    {
+                        shown.Add(text);
+                        if (button == MessageBoxButton.YesNo)
+                        {
+                            WaitForRecordAndDoEvents(avi);
+                            Assert.AreEqual(1, shown.Count, "確認の上に結果を重ねて出さない");
+                            return answer;
+                        }
+                        return MessageBoxResult.OK;
+                    };
+                    avi = StartRecording(window, path, 1);
+
+                    // 録画中に「記録開始」を押すと「実行中です。中断しますか？」を出す
+                    ((Button)window.FindName("button_Record")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+
+                    CollectionAssert.AreEqual(new[] { _stopConfirm, _timeoutMessage }, shown, "答え: " + answer);
+                });
+            }
+        }
+
+        [TestMethod]
+        public void 閉じる確認の間に録画が終わらなければ_いいえの後は何も出さず結果はいつもどおり出す()
+        {
+            String path = Path.Combine(_workDir, "close_no_running.avi");
+            StaRunner.Run(() =>
+            {
+                MainWindow window = new MainWindow();
+                List<String> shown = new List<String>();
+                window.ShowMessage = (text, caption, button) =>
+                {
+                    shown.Add(text);
+                    return button == MessageBoxButton.YesNo ? MessageBoxResult.No : MessageBoxResult.OK;
+                };
+                ManageAvi avi = StartRecording(window, path, 100);
+
+                Assert.IsFalse(window.StopRecordForClose());
+                CollectionAssert.AreEqual(new[] { _closeConfirm }, shown);
+                Assert.IsTrue(avi.IsRecording(), "いいえなら録画を続ける");
+
+                avi.StopRecord();
+                WaitForRecordAndDoEvents(avi);
+                CollectionAssert.AreEqual(new[] { _closeConfirm, "ファイルを保存しました。" }, shown);
+            });
+        }
+
+        // 一時フォルダへ非圧縮で録画を始める（8×8、10FPS、コマ送り10＝1フレーム100ms）
+        private static ManageAvi StartRecording(MainWindow window, String path, uint sec)
+        {
+            ManageAvi avi = window.Avi;
+            avi.SetSaveFileName(path);
+            avi.SetCaptureRect(0, 0, 8, 8);
+            avi.SetFrameRate(10);
+            avi.SetRecordSec(sec);
+            avi.SetSkipFrame(10);
+            avi.SetCaptureQuality(24);
+            avi.SetCompress(false);
+            avi.SetResize(false, 0, 0);
+            avi.SetRecordMousePoint(false);
+            avi.StartRecord();
+            return avi;
+        }
+
+        // 録画スレッドが終わるまで待ち、UIスレッドへ回された結果の通知を処理させる
+        private static void WaitForRecordAndDoEvents(ManageAvi avi)
+        {
+            Stopwatch watch = Stopwatch.StartNew();
+            while (avi.IsExecution())
+            {
+                if (watch.Elapsed > TimeSpan.FromSeconds(30))
+                {
+                    Assert.Fail("録画が終わらない");
+                }
+                Thread.Sleep(20);
+            }
+            DoEvents();
+        }
+
+        private static void DoEvents()
+        {
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.Background, new Action(() => { }));
         }
 
         private static String Text(Window window, String name)

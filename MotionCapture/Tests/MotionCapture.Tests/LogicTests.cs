@@ -301,22 +301,47 @@ namespace MotionCapture.Tests
         // ---- 保存先の確認 ----
 
         [TestMethod]
-        public void 保存先が他で開かれていたら作れない()
+        public void 保存先が他で開かれていたら使えない()
         {
             String dir = Path.Combine(Path.GetTempPath(), "MotionCaptureTests_" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(dir);
             try
             {
                 String path = Path.Combine(dir, "a.avi");
-                Assert.IsTrue(MainWindow.CanCreateFile(path));
-                Assert.IsTrue(File.Exists(path));
+                File.WriteAllBytes(path, new byte[] { 1, 2, 3 });
 
                 using (new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    Assert.IsFalse(MainWindow.CanCreateFile(path));
+                    Assert.IsFalse(MainWindow.CanOpenSaveFile(path));
                 }
-                Assert.IsFalse(MainWindow.CanCreateFile(Path.Combine(dir, "none", "a.avi")));
-                Assert.IsFalse(MainWindow.CanCreateFile(""));
+                Assert.IsFalse(MainWindow.CanOpenSaveFile(Path.Combine(dir, "none", "a.avi")));
+                Assert.IsFalse(MainWindow.CanOpenSaveFile(""));
+                Assert.IsTrue(MainWindow.CanOpenSaveFile(path), "閉じられた後は使える");
+            }
+            finally
+            {
+                Directory.Delete(dir, true);
+            }
+        }
+
+        [TestMethod]
+        public void 保存先の確認では既存のファイルを切り詰めず無ければ何も残さない()
+        {
+            String dir = Path.Combine(Path.GetTempPath(), "MotionCaptureTests_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            try
+            {
+                // 以前は確かめるときに空にしていたので、圧縮の選択をキャンセルすると元の中身が消えていた
+                String existing = Path.Combine(dir, "existing.avi");
+                byte[] content = new byte[] { 1, 2, 3, 4, 5 };
+                File.WriteAllBytes(existing, content);
+                Assert.IsTrue(MainWindow.CanOpenSaveFile(existing));
+                CollectionAssert.AreEqual(content, File.ReadAllBytes(existing));
+
+                // 無いファイルは作って確かめるが、0バイトのファイルは残さない（録画で必要になったら録画側が作る）
+                String created = Path.Combine(dir, "new.avi");
+                Assert.IsTrue(MainWindow.CanOpenSaveFile(created));
+                Assert.IsFalse(File.Exists(created));
             }
             finally
             {

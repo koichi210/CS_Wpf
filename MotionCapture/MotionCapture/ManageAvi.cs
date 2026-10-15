@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading;
 using System.Windows;
 using static MotionCapture.NativeMethods;
@@ -277,21 +278,44 @@ namespace MotionCapture
         internal AviError Run(out Boolean completed)
         {
             completed = false;
+            Boolean createdFile = false;
+            int writtenFrames = 0;
             AVIFileInit();
             try
             {
                 InitAviStreamInfo();
+                InitBitmapInfo();
 
-                AviError err = CreateAviFile();
-                if (err == AviError.Success)
+                // 圧縮方式は、保存先のファイルを作る前に選ばせる。キャンセル（記録停止・閉じるによるものも含む）なら
+                // 保存先には触らない（無ければ作らず、既存のファイルも切り詰めない）
+                COMPVARS cv = new COMPVARS();
+                if (!ChooseCompressor(ref cv))
                 {
-                    InitBitmapInfo();
-                    err = SetStreamFormat();
+                    return AviError.CancelCompress;
+                }
+
+                AviError err;
+                try
+                {
+                    // 録画が成立しなかったときに消してよいのは、この録画で新しく作ったファイルだけ
+                    createdFile = !File.Exists(_saveFileName);
+                    err = CreateAviFile();
+                    if (err == AviError.Success)
+                    {
+                        err = SetStreamFormat(ref cv);
+                    }
+                }
+                finally
+                {
+                    if (_compress)
+                    {
+                        ICCompressorFree(ref cv);
+                    }
                 }
 
                 if (err == AviError.Success)
                 {
-                    Record();
+                    writtenFrames = Record();
                     completed = _executing;
                 }
                 return err;
@@ -300,6 +324,25 @@ namespace MotionCapture
             {
                 ReleaseAvi();
                 AVIFileExit();
+
+                // ストリームが作れなかったなどで1フレームも書けなかったら、この録画で作った（中身のない）ファイルは消す
+                if (createdFile && writtenFrames == 0)
+                {
+                    DeleteQuietly(_saveFileName);
+                }
+            }
+        }
+
+        private static void DeleteQuietly(String path)
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException
+                || ex is ArgumentException || ex is NotSupportedException)
+            {
+                // 消せなくても録画の結果は変わらないので、そのままにする
             }
         }
 
@@ -372,17 +415,15 @@ namespace MotionCapture
             return AviError.Success;
         }
 
-        private AviError SetStreamFormat()
+        // 圧縮方式を選ばせる（圧縮しないときは何もしない）。選ばれたらtrueで、cvは呼び出し側がICCompressorFreeする
+        private Boolean ChooseCompressor(ref COMPVARS cv)
         {
-            int formatSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(BITMAPINFO));
-            _compressAviStream = IntPtr.Zero;
             if (!_compress)
             {
-                AVIStreamSetFormat(_aviStream, 0, ref _bitmapInfo, formatSize);
-                return AviError.Success;
+                return true;
             }
 
-            COMPVARS cv = new COMPVARS();
+            cv = new COMPVARS();
             cv.cbSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(COMPVARS));
             cv.dwFlags = ICMF_COMPVARS_VALID;
             cv.fccHandler = comptypeDIB;
@@ -394,9 +435,18 @@ namespace MotionCapture
             Boolean chosen = _executing
                 && ICCompressorChoose(IntPtr.Zero, ICMF_CHOOSE_DATARATE | ICMF_CHOOSE_KEYFRAME, ref _bitmapInfo, IntPtr.Zero, ref cv, IntPtr.Zero);
             _choosingThreadId = 0;
-            if (!chosen)
+            return chosen;
+        }
+
+        // cvはChooseCompressorで選んだ圧縮方式（圧縮しないときは使わない）
+        private AviError SetStreamFormat(ref COMPVARS cv)
+        {
+            int formatSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(BITMAPINFO));
+            _compressAviStream = IntPtr.Zero;
+            if (!_compress)
             {
-                return AviError.CancelCompress;
+                AVIStreamSetFormat(_aviStream, 0, ref _bitmapInfo, formatSize);
+                return AviError.Success;
             }
 
             _aviStreamInfo.fccHandler = cv.fccHandler;
@@ -415,9 +465,8 @@ namespace MotionCapture
             opt.cbParms = (uint)cv.cbState;
             opt.dwInterleaveEvery = 0;
 
-            // opt は cv.lpState を指しているので、ストリームを作ってから解放する
+            // opt は cv.lpState を指しているので、cv はストリームを作った後に呼び出し側で解放する
             int hr = AVIMakeCompressedStream(out _compressAviStream, _aviStream, ref opt, IntPtr.Zero);
-            ICCompressorFree(ref cv);
             if (AVIERR_OK != hr)
             {
                 return AviError.CreateCompressStream;
@@ -427,7 +476,8 @@ namespace MotionCapture
             return AviError.Success;
         }
 
-        private void Record()
+        // 書いたフレーム数を返す
+        private int Record()
         {
             IntPtr memDc = CreateCompatibleDC(IntPtr.Zero);
             IntPtr pvBits;
@@ -450,7 +500,9 @@ namespace MotionCapture
 
             IntPtr stream = _compress ? _compressAviStream : _aviStream;
 
-            for (uint frameNo = 0; frameNo < _aviStreamInfo.dwLength && _executing; frameNo++)
+            // ファイルを作った以上は、すぐ止められても最初の1フレームは書く（フレームのない AVI を残さない）
+            uint frameNo = 0;
+            for (; frameNo == 0 || (frameNo < _aviStreamInfo.dwLength && _executing); frameNo++)
             {
                 // 画面の記録領域を取り込む
                 if (_resize)
@@ -476,6 +528,8 @@ namespace MotionCapture
             DeleteObject(memBitmap);
             DeleteDC(memDc);
             DeleteDC(dcScreen);
+
+            return (int)frameNo;
         }
 
         // マウスポインタを録画画像に描き込む
