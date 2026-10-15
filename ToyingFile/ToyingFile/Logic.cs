@@ -30,6 +30,24 @@ namespace ToyingFile
             return Directory.GetFiles(directory, searchPattern, searchOption);
         }
 
+        /// <summary>
+        /// 対象ファイルのディレクトリとして使えるかを調べ、使えなければ画面に出すメッセージを返す(使えればnull)。
+        /// 以前は存在しないディレクトリを指定すると Directory.GetFiles の例外で例外ダイアログが出ていた。
+        /// </summary>
+        public static string ValidateDirectory(string directory)
+        {
+            if (directory == string.Empty)
+            {
+                return "対象ファイルのディレクトリが設定されていません";
+            }
+            // Directory.Exists はパスに使えない文字が入っていても例外にせず false を返す
+            if (!Directory.Exists(directory))
+            {
+                return "対象ファイルのディレクトリが見つかりません" + Environment.NewLine + directory;
+            }
+            return null;
+        }
+
         /// <summary>削除文字列の入力欄(1行に1つ)を配列にする。空行は無視する。</summary>
         public static string[] SplitDeleteStrings(string text)
         {

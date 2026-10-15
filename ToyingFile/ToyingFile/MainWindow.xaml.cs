@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Windows;
 using StandardTemplate;
 
@@ -25,14 +26,25 @@ namespace ToyingFile
 
         internal void Execute()
         {
-            if (textBox_Directory.Text == String.Empty)
+            String error = Logic.ValidateDirectory(textBox_Directory.Text);
+            if (error != null)
             {
-                MessageBox.Show("対象ファイルのディレクトリが設定されていません");
+                MessageBox.Show(error);
                 return;
             }
 
             //リストアップ
-            String[] targetFiles = Logic.GetTargetFiles(textBox_Directory.Text, textBox_File.Text, checkBox_SubDirectory.IsChecked == true);
+            // ディレクトリがあっても、アクセス権の無いサブフォルダやパターンに使えない文字があると列挙の途中で失敗する
+            String[] targetFiles;
+            try
+            {
+                targetFiles = Logic.GetTargetFiles(textBox_Directory.Text, textBox_File.Text, checkBox_SubDirectory.IsChecked == true);
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException || ex is ArgumentException)
+            {
+                MessageBox.Show("対象ファイルを列挙できませんでした" + Environment.NewLine + ex.Message);
+                return;
+            }
 
             // メニュー
             if (radioButton_DeleteString.IsChecked == true)
