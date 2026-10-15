@@ -63,13 +63,13 @@
             </Grid.RowDefinitions>
             <Label Grid.Row="0" Grid.Column="0" Content="検索ワード" Padding="0,0,0,2" />
             <stc:TextBoxEx Grid.Row="1" Grid.Column="0" x:Name="textBox_SearchWordList"
-                           AcceptsReturn="True" TextWrapping="Wrap"
+                           AcceptsReturn="True" TextWrapping="NoWrap"
                            VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                            ToolTip="1行が1グループ。行内をスペースで区切った各ワードを含む行を抽出し、行ごとに「◆」見出しを付けて出力する"
                            ToolTipService.ShowDuration="15000" />
             <Label Grid.Row="0" Grid.Column="1" Content="検索結果" Padding="0,0,0,2" Margin="23,0,0,0" />
             <stc:TextBoxEx Grid.Row="1" Grid.Column="1" x:Name="textBox_SearchResultList" Margin="23,0,0,0"
-                           AcceptsReturn="True" TextWrapping="Wrap"
+                           AcceptsReturn="True" TextWrapping="NoWrap"
                            VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
         </Grid>
 

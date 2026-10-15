@@ -22,13 +22,13 @@
             <!-- 取得元 / 取得値 -->
             <Label Grid.Row="0" Grid.Column="0" Content="取得元" Padding="0,0,0,2" />
             <stc:TextBoxEx Grid.Row="1" Grid.Column="0" x:Name="textBox_SourceList"
-                           AcceptsReturn="True" TextWrapping="Wrap"
+                           AcceptsReturn="True" TextWrapping="NoWrap"
                            VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                            ToolTip="HTMLを取得するページのURL。1行に1つずつ書く(空行は無視)"
                            ToolTipService.ShowDuration="15000" />
             <Label Grid.Row="0" Grid.Column="1" Content="取得値" Padding="0,0,0,2" Margin="33,0,0,0" />
             <stc:TextBoxEx Grid.Row="1" Grid.Column="1" x:Name="textBox_DestList" Margin="33,0,0,0"
-                           AcceptsReturn="True" TextWrapping="Wrap"
+                           AcceptsReturn="True" TextWrapping="NoWrap"
                            VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
 
             <!-- 検索文字(終端はWinForms版でも非表示・処理にも未使用。設定ファイルの互換のため残してある) -->
