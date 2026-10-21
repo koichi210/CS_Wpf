@@ -30,7 +30,7 @@
                                ToolTip="削除する文字列。1行に1つずつ書く(空行は無視)" ToolTipService.ShowDuration="15000" />
                 <CheckBox Grid.Row="2" x:Name="checkBox_CaseSensitive" Content="大文字小文字を区別" Margin="22,2,0,1" />
                 <CheckBox Grid.Row="3" x:Name="checkBox_DeleteLine" Content="行を削除" Margin="22,2,0,2"
-                          ToolTip="指定文字を含む行を行ごと空行にする(行は詰めない)。改行がCRLFでないファイルは全体が1行として扱われる" ToolTipService.ShowDuration="15000" />
+                          ToolTip="指定文字を含む行を行ごと空行にする(行は詰めない)。改行コード(CRLF/LF/CR)は元のまま残す" ToolTipService.ShowDuration="15000" />
             </Grid>
         </GroupBox>
 
