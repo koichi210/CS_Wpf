@@ -104,6 +104,30 @@ namespace CubNotice.Tests
             Assert.AreEqual(new DateTime(2026, 9, 1), NewsletterParser.InferDate(9, 1, issue));
         }
 
+        [TestMethod]
+        public void InferDate_翌年のうるう日も取り込め無い日付はnullになる()
+        {
+            // 2027年(うるう年でない)の秋号に載る2028年2月29日の予定
+            Assert.AreEqual(new DateTime(2028, 2, 29), NewsletterParser.InferDate(2, 29, new DateTime(2027, 10, 1)));
+            Assert.IsNull(NewsletterParser.InferDate(9, 31, new DateTime(2026, 9, 27)));
+            Assert.IsNull(NewsletterParser.InferDate(13, 1, new DateTime(2026, 9, 27)));
+            Assert.IsNull(NewsletterParser.InferDate(10, 0, new DateTime(2026, 9, 27)));
+        }
+
+        [TestMethod]
+        public void Parse_無い日付の予定や発行日は例外にせず読み飛ばす()
+        {
+            string text = "2026/13/40 発行\n☆ 9月31日(水) 隊集会\n集　合：９時００分　炊事場\n☆ 10月18日(日) ハイキング\n解　散：１６時００分　駅";
+            ParseResult result = NewsletterParser.Parse(Lines(text), "", new DateTime(2026, 9, 27));
+
+            Assert.IsNull(result.IssueDate);
+            CubEvent e = result.Events.Single();
+            Assert.AreEqual(new DateTime(2026, 10, 18), e.Date);
+            Assert.AreEqual("ハイキング", e.Title);
+            Assert.AreEqual("", e.Gathering, "無い日付の予定の集合を次の予定に混ぜない");
+            Assert.AreEqual("16時00分  駅", e.Dismissal);
+        }
+
         // ---- 整形(データ取得フェーズ) ----
 
         [TestMethod]
@@ -199,6 +223,36 @@ namespace CubNotice.Tests
                 reloaded.RemovePast(new DateTime(2027, 1, 18));
                 Assert.IsNull(reloaded.FindNext(new DateTime(2027, 1, 18)));
                 Assert.AreEqual(0, reloaded.FindUpcoming(new DateTime(2027, 1, 18), 2).Count);
+            }
+            finally
+            {
+                Directory.Delete(Path.GetDirectoryName(path), true);
+            }
+        }
+
+        [TestMethod]
+        public void Store_保存しても一覧に渡したリストは差し替えない()
+        {
+            string path = Path.Combine(Path.GetTempPath(), "CubNoticeTest_" + Guid.NewGuid().ToString("N"), "events.json");
+            try
+            {
+                EventStore store = new EventStore(path);
+                store.AddOrUpdate(ParseSample().Events);
+
+                // 一覧(DataGrid)のItemsSourceと同じリスト。編集で日付順が崩れた後に保存する
+                List<CubEvent> bound = store.Events;
+                bound[0].Date = new DateTime(2027, 3, 1);
+                store.Save();
+                Assert.AreSame(bound, store.Events);
+
+                // 一覧側でDeleteキーで消した行は、次の保存に反映される
+                bound.RemoveAt(1);
+                store.Save();
+
+                EventStore reloaded = new EventStore(path);
+                reloaded.Load();
+                Assert.AreEqual(6, reloaded.Events.Count);
+                Assert.AreEqual(new DateTime(2027, 3, 1), reloaded.Events.Last().Date, "ファイルには日付順で保存する");
             }
             finally
             {

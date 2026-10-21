@@ -44,9 +44,10 @@ namespace CubNotice
 
         public void Save()
         {
-            Sort();
+            // Eventsは一覧(DataGrid)のItemsSourceにそのまま渡しているので、保存ではリストを差し替えない。
+            // 差し替えると、セル編集の後にDeleteキーで消した行が一覧側の古いリストからしか消えず、保存されなくなる
             Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-            File.WriteAllText(filePath, JsonConvert.SerializeObject(Events, Formatting.Indented), Encoding.UTF8);
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(Events.OrderBy(e => e.Date).ToList(), Formatting.Indented), Encoding.UTF8);
         }
 
         /// <summary>

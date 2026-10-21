@@ -54,7 +54,8 @@ namespace CubNotice
             foreach (string line in normalized)
             {
                 Match m = IssueDateRegex.Match(line);
-                if (m.Success)
+                // 「2026/13/40 発行」のような読み違いは発行日として使わない(DateTimeが作れず例外になるため)
+                if (m.Success && IsValidDate(int.Parse(m.Groups[1].Value), int.Parse(m.Groups[2].Value), int.Parse(m.Groups[3].Value)))
                 {
                     result.IssueDate = new DateTime(int.Parse(m.Groups[1].Value), int.Parse(m.Groups[2].Value), int.Parse(m.Groups[3].Value));
                     break;
@@ -69,10 +70,17 @@ namespace CubNotice
                 if (head.Success)
                 {
                     Close(current, result);
+                    DateTime? date = InferDate(int.Parse(head.Groups[1].Value), int.Parse(head.Groups[2].Value), baseDate);
+                    if (date == null)
+                    {
+                        // 「9月31日」のような無い日付の予定は取り込まない(続く集合・解散なども前の予定に混ぜない)
+                        current = null;
+                        continue;
+                    }
                     current = new Block(new CubEvent
                     {
                         Header = header ?? "",
-                        Date = InferDate(int.Parse(head.Groups[1].Value), int.Parse(head.Groups[2].Value), baseDate),
+                        Date = date.Value,
                         DayOfWeekText = head.Groups[3].Value.Trim(),
                     });
                     current.SetTitle(head.Groups[4].Value);
@@ -112,16 +120,25 @@ namespace CubNotice
 
         /// <summary>
         /// 月日から年を推定する。基準日より3か月以上前になる月日は翌年とみなす
-        /// (9月発行号に載る1月の予定など)。
+        /// (9月発行号に載る1月の予定など)。無い日付(9月31日など)ならnull。
         /// </summary>
-        internal static DateTime InferDate(int month, int day, DateTime baseDate)
+        internal static DateTime? InferDate(int month, int day, DateTime baseDate)
         {
-            DateTime candidate = new DateTime(baseDate.Year, month, day);
-            if (candidate < baseDate.AddMonths(-3))
+            // 年は月日だけで決める。基準日の年に無い2月29日でも、翌年(うるう年)の予定なら取り込めるようにするため
+            DateTime threshold = baseDate.Date.AddMonths(-3);
+            bool nextYear = threshold.Year == baseDate.Year
+                && (month < threshold.Month || (month == threshold.Month && day < threshold.Day));
+            int year = nextYear ? baseDate.Year + 1 : baseDate.Year;
+            if (!IsValidDate(year, month, day))
             {
-                candidate = candidate.AddYears(1);
+                return null;
             }
-            return candidate;
+            return new DateTime(year, month, day);
+        }
+
+        private static bool IsValidDate(int year, int month, int day)
+        {
+            return year >= 1 && year <= 9999 && month >= 1 && month <= 12 && day >= 1 && day <= DateTime.DaysInMonth(year, month);
         }
 
         /// <summary>
