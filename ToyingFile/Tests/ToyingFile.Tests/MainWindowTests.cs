@@ -113,6 +113,31 @@ namespace ToyingFile.Tests
         }
 
         [TestMethod]
+        public void 削除する文字列が無かったファイルは書き戻さない()
+        {
+            // 以前は一致しなかったファイルもShift_JISで書き直していたため、UTF-8の日本語やバイナリが化けていた
+            string hitFile = Path.Combine(_tempDirectory, "hit.txt");
+            string utf8File = Path.Combine(_tempDirectory, "utf8.txt");
+            byte[] utf8Bytes = new UTF8Encoding(false).GetBytes("日本語だけの行" + Environment.NewLine + "対象なし");
+            File.WriteAllText(hitFile, "x TARGET y");
+            File.WriteAllBytes(utf8File, utf8Bytes);
+
+            StaRunner.Run(() =>
+            {
+                MainWindow window = new MainWindow();
+                Find<TextBox>(window, "textBox_Directory").Text = _tempDirectory;
+                Find<TextBox>(window, "textBox_DeleteString").Text = "TARGET";
+                Find<RadioButton>(window, "radioButton_DeleteString").IsChecked = true;
+                Find<CheckBox>(window, "checkBox_CaseSensitive").IsChecked = true;
+
+                window.Execute();
+            });
+
+            Assert.AreEqual("x  y", File.ReadAllText(hitFile));
+            CollectionAssert.AreEqual(utf8Bytes, File.ReadAllBytes(utf8File), "一致しなかったファイルはバイト列ごとそのまま");
+        }
+
+        [TestMethod]
         public void ShiftJISのファイルを読み書きできる()
         {
             Encoding sjis = Encoding.GetEncoding("Shift_JIS");

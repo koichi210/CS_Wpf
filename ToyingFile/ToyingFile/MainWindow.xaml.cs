@@ -63,6 +63,13 @@ namespace ToyingFile
                 String fileData = _fio.LoadFile(filePath);
                 String resultData = Logic.DeleteStringFromContent(fileData, deleteStrings,
                     checkBox_CaseSensitive.IsChecked == true, checkBox_DeleteLine.IsChecked == true);
+
+                // 削除する文字列が無かったファイルは書き戻さない。以前は対象の全ファイルをShift_JISで書き直していたため、
+                // 一致しなかったUTF-8のテキストや画像等のバイナリ(ファイル名パターン空欄=全ファイル)まで化けて壊れていた
+                if (resultData == fileData)
+                {
+                    continue;
+                }
                 _fio.SaveFile(filePath, resultData);
             }
         }

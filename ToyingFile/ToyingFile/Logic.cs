@@ -67,9 +67,13 @@ namespace ToyingFile
                 ? null
                 : deleteStrings.Select(s => new Regex(Regex.Escape(s), RegexOptions.IgnoreCase)).ToArray();
 
-            string[] lines = fileData.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            // 以前はEnvironment.NewLine(CRLF)だけで分けていたため、LFだけのファイルは全体が1行扱いになり、
+            // 行ごと削除で「どこか1か所でも一致したらファイルの中身が丸ごと消える」状態だった。
+            // 改行コード(CRLF/LF/CR、混在も可)を問わず行に分け、区切りの改行コードは捕捉して元のまま連結し直す
+            // (Regex.Splitの捕捉グループで、偶数番目が行・奇数番目が改行コードになる)
+            string[] lines = Regex.Split(fileData, "(\r\n|\n|\r)");
 
-            for (int j = 0; j < lines.Length; j++)
+            for (int j = 0; j < lines.Length; j += 2)
             {
                 for (int k = 0; k < deleteStrings.Length && lines[j] != string.Empty; k++)
                 {
@@ -96,7 +100,7 @@ namespace ToyingFile
                 }
             }
 
-            return string.Join(Environment.NewLine, lines);
+            return string.Concat(lines);
         }
     }
 }
