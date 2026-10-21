@@ -12,6 +12,17 @@ namespace TrimFileData
     /// </summary>
     internal static class Logic
     {
+        // 行の区切りとして扱う改行コード(TrimHtmlDataのLogic.SplitLinesと同じ)。以前はEnvironment.NewLine(CRLF)だけで分けていたため、
+        // LFだけのリファレンスファイルが丸ごと1行扱いになり、検索ワードが1つでもヒットするとファイル全体が結果に出ていた。
+        // "\r\n"を先頭に置くのは、CRLFを"\r"と"\n"の2回の区切り(=間に空行)と見なさないため
+        private static readonly string[] _newLines = { "\r\n", "\n", "\r" };
+
+        // 改行コード(CRLF/LF/CR、混在も可)を問わず行に分ける。空行は捨てる
+        public static string[] SplitLines(string text)
+        {
+            return text.Split(_newLines, StringSplitOptions.RemoveEmptyEntries);
+        }
+
         public static string GetSearchData(string[] searchWordLines, string[] referLines, bool ordinalCase, bool firstWordOnly, string searchCommonWord)
         {
             StringComparison comparison = ordinalCase ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;

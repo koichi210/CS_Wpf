@@ -24,6 +24,12 @@ namespace TrimFileData.Tests
         }
 
         [TestMethod]
+        public void SplitLinesは改行コードを問わず行に分け空行は捨てる()
+        {
+            CollectionAssert.AreEqual(new[] { "a", "b", "c", "d" }, Logic.SplitLines("a\r\nb\nc\r\r\nd\n"));
+        }
+
+        [TestMethod]
         public void ordinalCaseがtrueなら大文字小文字を区別する()
         {
             string[] source = { "APPLE" };

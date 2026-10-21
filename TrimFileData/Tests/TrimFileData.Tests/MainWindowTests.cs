@@ -69,6 +69,31 @@ namespace TrimFileData.Tests
         }
 
         [TestMethod]
+        public void LF改行のリファレンスファイルでもヒットした行だけを抽出する()
+        {
+            // 以前はCRLFだけで分けていたため、LFだけのファイルは全体が1行扱いになり、ヒットしない行まで結果に出ていた
+            string referPath = Path.Combine(tempDirectory, "refer_lf.txt");
+            File.WriteAllText(referPath, "apple pie\nbanana split\ncherry apple\n", Encoding.GetEncoding("Shift_JIS"));
+
+            StaRunner.Run(() =>
+            {
+                var window = new MainWindow(tempDirectory);
+                window.CopyToClipboard = text => true;
+
+                window.textBox_ReferencePath.Text = referPath;
+                // LFだけの文字列を貼り付けた検索ワード欄も1行ずつのワードとして扱う
+                window.textBox_SearchWordList.Text = "pie\ncherry";
+
+                Assert.IsTrue(window.ExecuteSearch());
+
+                string result = window.textBox_SearchResultList.Text;
+                StringAssert.Contains(result, "◆pie" + Environment.NewLine + "apple pie" + Environment.NewLine);
+                StringAssert.Contains(result, "◆cherry" + Environment.NewLine + "cherry apple" + Environment.NewLine);
+                Assert.IsFalse(result.Contains("banana"));
+            });
+        }
+
+        [TestMethod]
         public void 画面のチェックと共通ワードが検索に反映される()
         {
             string referPath = Path.Combine(tempDirectory, "refer.txt");
