@@ -118,19 +118,31 @@ namespace DivisionCoupling
 
                     int size = (restSize > divSize) ? divSize : (int)restSize;
 
-                    using (destFile)
+                    // 小さい分割ファイルはFileStreamのバッファに溜まり、閉じるときに書き出されるので、
+                    // usingごと囲って閉じるときの書き込み失敗も受ける
+                    try
                     {
-                        int read = ReadFully(srcFile, buffer, size);
-                        try
+                        using (destFile)
                         {
+                            int read;
+                            try
+                            {
+                                read = ReadFully(srcFile, buffer, size);
+                            }
+                            catch (IOException)
+                            {
+                                // 元ファイルが読めなくなった(リムーバブルディスクが抜かれた等)
+                                error = ProcessError.OpenSource;
+                                break;
+                            }
                             destFile.Write(buffer, 0, read);
                         }
-                        catch (IOException)
-                        {
-                            // 書き込めない(ディスクがいっぱい等)のも、出力ファイルが作れなかった扱いにする
-                            error = ProcessError.OpenDest;
-                            break;
-                        }
+                    }
+                    catch (IOException)
+                    {
+                        // 書き込めない(ディスクがいっぱい等)のも、出力ファイルが作れなかった扱いにする
+                        error = ProcessError.OpenDest;
+                        break;
                     }
                     restSize -= size;
 
@@ -174,39 +186,48 @@ namespace DivisionCoupling
             }
 
             ProcessError error = ProcessError.None;
-            using (destFile)
+            try
             {
-                for (int index = 1; ; index++)
+                using (destFile)
                 {
-                    if (!isRunning())
+                    for (int index = 1; ; index++)
                     {
-                        error = ProcessError.Aborted;
-                        break;
-                    }
-
-                    FileStream partFile;
-                    if (!TryOpen(MakePartPath(destPath, index), FileMode.Open, FileAccess.Read, out partFile))
-                    {
-                        break;
-                    }
-
-                    using (partFile)
-                    {
-                        try
+                        if (!isRunning())
                         {
-                            int readSize;
-                            while ((readSize = partFile.Read(buffer, 0, MergeBufferSize)) > 0)
-                            {
-                                destFile.Write(buffer, 0, readSize);
-                            }
-                        }
-                        catch (IOException)
-                        {
-                            error = ProcessError.OpenDest;
+                            error = ProcessError.Aborted;
                             break;
+                        }
+
+                        FileStream partFile;
+                        if (!TryOpen(MakePartPath(destPath, index), FileMode.Open, FileAccess.Read, out partFile))
+                        {
+                            break;
+                        }
+
+                        using (partFile)
+                        {
+                            try
+                            {
+                                int readSize;
+                                while ((readSize = partFile.Read(buffer, 0, MergeBufferSize)) > 0)
+                                {
+                                    destFile.Write(buffer, 0, readSize);
+                                }
+                            }
+                            catch (IOException)
+                            {
+                                error = ProcessError.OpenDest;
+                                break;
+                            }
                         }
                     }
                 }
+            }
+            catch (IOException)
+            {
+                // 最後の書き込みはFileStreamのバッファに残っていて、閉じるときに書き出される。
+                // そこで失敗(ディスクがいっぱい等)しても、欠けた結合結果を残さない
+                error = ProcessError.OpenDest;
             }
 
             if (error != ProcessError.None)
