@@ -55,10 +55,13 @@ namespace ImageViewer
         private void SaveSetting()
         {
             var settings = Properties.Settings.Default;
-            settings.ScreenLeft = Left;
-            settings.ScreenTop = Top;
-            settings.ScreenWidth = Width;
-            settings.ScreenHeight = Height;
+            // 最小化中・最大化中に閉じると、Width/Heightはタスクバー上の大きさ(160×28程度)や画面いっぱいの大きさになり、
+            // 次回起動時に極小・画面サイズのウィンドウで開いてしまう。通常表示のときの位置と大きさ(RestoreBounds)を保存する
+            Rect bounds = (WindowState == WindowState.Normal) ? new Rect(Left, Top, Width, Height) : RestoreBounds;
+            settings.ScreenLeft = bounds.Left;
+            settings.ScreenTop = bounds.Top;
+            settings.ScreenWidth = bounds.Width;
+            settings.ScreenHeight = bounds.Height;
             settings.ThumbnailDirPath = TextDirName.Text;
             settings.TextFileName = TextFileName.Text;
 

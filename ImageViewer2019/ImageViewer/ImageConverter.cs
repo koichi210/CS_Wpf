@@ -28,16 +28,25 @@ namespace ImageViewer
             // 解決策2：リソースを解放できる
             // streamを使うことで画像をメモリ上に展開できるので、リソースを解放することができる
             // (例外時もストリームを閉じるよう using にしている)
-            var img = new BitmapImage();
-            using (FileStream stream = File.OpenRead(value.ToString()))
+            // コンバーター内の例外はバインディングが握りつぶさずアプリごと落ちるため、壊れた画像・読めないファイル
+            // (一覧作成後に消された・ロック中など)が1枚でもフォルダにあると落ちていた。読めない画像はサムネイル無し(null)にする
+            try
             {
-                img.BeginInit();
-                img.DecodePixelWidth = _thumbnailDecodePixelWidth;
-                img.CacheOption = BitmapCacheOption.OnLoad;
-                img.StreamSource = stream;
-                img.EndInit();
+                var img = new BitmapImage();
+                using (FileStream stream = File.OpenRead(value.ToString()))
+                {
+                    img.BeginInit();
+                    img.DecodePixelWidth = _thumbnailDecodePixelWidth;
+                    img.CacheOption = BitmapCacheOption.OnLoad;
+                    img.StreamSource = stream;
+                    img.EndInit();
+                }
+                return img;
             }
-            return img;
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         //-----------------------------------------------------------------------------------------------
