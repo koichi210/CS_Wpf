@@ -16,6 +16,8 @@ namespace MotionCapture
         CreateStream,
         CancelCompress,
         CreateCompressStream,
+        CreateBitmap,
+        WriteFrame,
     }
 
     /// <summary>
@@ -49,7 +51,7 @@ namespace MotionCapture
         private uint _frameRate = 0;
         private uint _scale = 1;            // 基本は等倍
         private uint _quality = unchecked((uint)-1);    // 0～10,000 (-1 はドライバーの既定値)
-        private uint _bitmapBpp = 0;        // 0,1,4,8,16,24,32 (0 is implied by the JPEG or PNG format)
+        private uint _bitmapBpp = 0;        // 16,24,32 (1/4/8 need a color table, so they are not supported)
         private uint _timeoutSec = 0;
         private int _skipFrameMs = 0;       // フレーム間の待ち時間（ミリ秒）
 
@@ -264,6 +266,10 @@ namespace MotionCapture
                     return "圧縮設定がキャンセルされました。";
                 case AviError.CreateCompressStream:
                     return "圧縮Streamが生成できませんでした。";
+                case AviError.CreateBitmap:
+                    return "録画用の画像が作成できませんでした。bpp の設定を確認してください。";
+                case AviError.WriteFrame:
+                    return "AVIファイルに書き込めませんでした。ディスクの空き容量を確認してください。\n" + saveFileName;
                 default:
                     return String.Empty;
             }
@@ -315,7 +321,7 @@ namespace MotionCapture
 
                 if (err == AviError.Success)
                 {
-                    writtenFrames = Record();
+                    err = Record(out writtenFrames);
                     completed = _executing;
                 }
                 return err;
@@ -476,14 +482,25 @@ namespace MotionCapture
             return AviError.Success;
         }
 
-        // 書いたフレーム数を返す
-        private int Record()
+        // writtenFramesは書いたフレーム数（1フレーム分の画像が作れなければ0）
+        private AviError Record(out int writtenFrames)
         {
-            IntPtr memDc = CreateCompatibleDC(IntPtr.Zero);
-            IntPtr pvBits;
+            writtenFrames = 0;
 
-            // 1フレーム分の画像（大きさは _frameWidth × _frameHeight）
+            // 1フレーム分の画像（大きさは _frameWidth × _frameHeight）。
+            // bpp が BI_RGB で使えない値（0 や 2 など）だと作れず pvBits が IntPtr.Zero になるので、書かずに終わる
+            IntPtr pvBits;
             IntPtr memBitmap = CreateDIBSection(IntPtr.Zero, ref _bitmapInfo, DIB_RGB_COLORS, out pvBits, IntPtr.Zero, 0);
+            if (memBitmap == IntPtr.Zero || pvBits == IntPtr.Zero)
+            {
+                if (memBitmap != IntPtr.Zero)
+                {
+                    DeleteObject(memBitmap);
+                }
+                return AviError.CreateBitmap;
+            }
+
+            IntPtr memDc = CreateCompatibleDC(IntPtr.Zero);
             IntPtr oldBitmap = SelectObject(memDc, memBitmap);
 
             IntPtr dcScreen = CreateDC("DISPLAY", "DISPLAY", "DISPLAY", IntPtr.Zero);
@@ -501,6 +518,7 @@ namespace MotionCapture
             IntPtr stream = _compress ? _compressAviStream : _aviStream;
 
             // ファイルを作った以上は、すぐ止められても最初の1フレームは書く（フレームのない AVI を残さない）
+            AviError err = AviError.Success;
             uint frameNo = 0;
             for (; frameNo == 0 || (frameNo < _aviStreamInfo.dwLength && _executing); frameNo++)
             {
@@ -520,7 +538,12 @@ namespace MotionCapture
                     DrawCursor(memDc, srcLeft, srcTop, scaleX, scaleY);
                 }
 
-                AVIStreamWrite(stream, (int)frameNo, 1, pvBits, sizeImage, AVIIF_KEYFRAME, IntPtr.Zero, IntPtr.Zero);
+                // ディスクがいっぱいなどで書けなければ、そこで止めてエラーにする（「保存しました」とは出さない）
+                if (AVIERR_OK != AVIStreamWrite(stream, (int)frameNo, 1, pvBits, sizeImage, AVIIF_KEYFRAME, IntPtr.Zero, IntPtr.Zero))
+                {
+                    err = AviError.WriteFrame;
+                    break;
+                }
                 Thread.Sleep(_skipFrameMs);
             }
 
@@ -529,7 +552,8 @@ namespace MotionCapture
             DeleteDC(memDc);
             DeleteDC(dcScreen);
 
-            return (int)frameNo;
+            writtenFrames = (int)frameNo;
+            return err;
         }
 
         // マウスポインタを録画画像に描き込む

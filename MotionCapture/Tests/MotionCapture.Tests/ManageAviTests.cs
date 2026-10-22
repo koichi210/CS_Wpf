@@ -160,6 +160,25 @@ namespace MotionCapture.Tests
         }
 
         [TestMethod]
+        public void 録画用の画像が作れないbppなら書かずにエラーにしファイルを残さない()
+        {
+            // 以前は空の画像バッファのまま書き続け、「保存しました」と出していた
+            String path = Path.Combine(_workDir, "bpp2.avi");
+            ManageAvi avi = MakeAvi(path, 8, 8, 2, 1);
+            avi.SetCaptureQuality(2);
+            AviError err = AviError.Success;
+
+            RunSta(() =>
+            {
+                Boolean completed;
+                err = avi.RecordSync(out completed);
+            });
+
+            Assert.AreEqual(AviError.CreateBitmap, err);
+            Assert.IsFalse(File.Exists(path), "1フレームも書けなかったファイルは消す");
+        }
+
+        [TestMethod]
         public void 最後まで録画するとタイムアウトのメッセージを出す()
         {
             String path = Path.Combine(_workDir, "timeout.avi");
@@ -392,6 +411,8 @@ namespace MotionCapture.Tests
             Assert.AreEqual("Streamが生成できませんでした。", ManageAvi.MakeErrorMessage(AviError.CreateStream, "a"));
             Assert.AreEqual("圧縮設定がキャンセルされました。", ManageAvi.MakeErrorMessage(AviError.CancelCompress, "a"));
             Assert.AreEqual("圧縮Streamが生成できませんでした。", ManageAvi.MakeErrorMessage(AviError.CreateCompressStream, "a"));
+            Assert.AreEqual("録画用の画像が作成できませんでした。bpp の設定を確認してください。", ManageAvi.MakeErrorMessage(AviError.CreateBitmap, "a"));
+            Assert.AreEqual("AVIファイルに書き込めませんでした。ディスクの空き容量を確認してください。\na", ManageAvi.MakeErrorMessage(AviError.WriteFrame, "a"));
         }
 
         // 待ち続けて止まらないときはテストを失敗にする（録画スレッドはバックグラウンドなので、テストの終了で消える）

@@ -165,22 +165,24 @@ namespace MotionCapture.Tests
         }
 
         [TestMethod]
-        public void bppは0から32まで()
+        public void bppは16か24か32だけ()
         {
-            DialogInput input = DefaultInput();
-            input.CaptBpp = "33";
-            AssertFail(input, InputField.CaptBpp, "0 から 32 までの整数を入力してください。");
+            // 0・2・3 は録画用の画像が作れず、1/4/8 はカラーテーブルが要るので受け付けない
+            foreach (String bpp in new[] { "0", "1", "2", "3", "4", "8", "15", "33", "-1" })
+            {
+                DialogInput input = DefaultInput();
+                input.CaptBpp = bpp;
+                AssertFail(input, InputField.CaptBpp, "bpp は 16・24・32 のどれかを入力してください。");
+            }
 
-            // UINTの欄なので "-1" は 4294967295 と読まれ、intで比べると-1になって範囲外
-            input = DefaultInput();
-            input.CaptBpp = "-1";
-            AssertFail(input, InputField.CaptBpp, "0 から 32 までの整数を入力してください。");
-
-            input = DefaultInput();
-            input.CaptBpp = "0";
-            InputField field;
-            String message;
-            Assert.IsTrue(Logic.Exchange(input, new CaptureSettings(), out field, out message));
+            foreach (String bpp in new[] { "16", "24", "32" })
+            {
+                DialogInput input = DefaultInput();
+                input.CaptBpp = bpp;
+                InputField field;
+                String message;
+                Assert.IsTrue(Logic.Exchange(input, new CaptureSettings(), out field, out message), "bpp: " + bpp);
+            }
         }
 
         [TestMethod]

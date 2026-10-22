@@ -37,7 +37,7 @@ namespace MotionCapture
         public int CaptRectY = 0;
         public int CaptRectWidth = 1920;
         public int CaptRectHeight = 1080;
-        public uint BitmapBpp = 24;         // 0,1,4,8,16,24,32 (0 is implied by the JPEG or PNG format)
+        public uint BitmapBpp = 24;         // 16,24,32 (1/4/8 need a color table, so they are not supported)
 
         public int ResizeRectWidth = 1024;
         public int ResizeRectHeight = 768;
@@ -83,6 +83,9 @@ namespace MotionCapture
         // MFCの標準メッセージ(l.JPN\afxres.rc)
         public const String ParseIntMessage = "整数を入力してください。";
         public const String ParseUIntMessage = "正の整数を入力してください。";
+
+        // bppの入力エラー（MFC版と同じ）
+        public const String BppMessage = "bpp は 16・24・32 のどれかを入力してください。";
 
         // MFCのDDX_Textは64文字のバッファにGetWindowTextするので、63文字目までしか読まない
         private const int _textBufferLength = 64;
@@ -189,6 +192,12 @@ namespace MotionCapture
             return (value < min || value > max) ? MakeRangeMessage(min, max) : null;
         }
 
+        // bppは16・24・32のどれか
+        public static String CheckBpp(uint bpp)
+        {
+            return (bpp == 16 || bpp == 24 || bpp == 32) ? null : BppMessage;
+        }
+
         /// <summary>
         /// MFC版のUpdateData(TRUE)と同じ順番で入力欄を読み、settingsへ書き込む。
         /// 最初に見つかったエラーで止め、そのときの入力欄とメッセージを返す
@@ -216,10 +225,10 @@ namespace MotionCapture
             settings.CaptRectHeight = i;
             if (Fail(CheckRange(i, 1, MaxFrameLength), InputField.CaptRectHeight, ref failedField, ref message)) return false;
 
-            // MFC版はUINTの値をDDV_MinMaxIntでintとして比べている（大きすぎる値は負数になって範囲外）
+            // 1/4/8 はカラーテーブル（パレット）が要るので扱わない。BI_RGB で画面をそのまま写せる 16/24/32 だけにする（MFC版と同じ）
             if (Fail(ParseUInt(input.CaptBpp, out u), InputField.CaptBpp, ref failedField, ref message)) return false;
             settings.BitmapBpp = u;
-            if (Fail(CheckRange(unchecked((int)u), 0, 32), InputField.CaptBpp, ref failedField, ref message)) return false;
+            if (Fail(CheckBpp(u), InputField.CaptBpp, ref failedField, ref message)) return false;
 
             if (Fail(ParseInt(input.CaptFps, out i), InputField.CaptFps, ref failedField, ref message)) return false;
             settings.FrameRate = i;
