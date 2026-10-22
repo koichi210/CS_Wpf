@@ -119,7 +119,7 @@ namespace CubNotice
         }
 
         /// <summary>
-        /// 月日から年を推定する。基準日より3か月以上前になる月日は翌年とみなす
+        /// 月日から年を推定する。基準日の3か月前より前になる月日は翌年とみなす
         /// (9月発行号に載る1月の予定など)。無い日付(9月31日など)ならnull。
         /// </summary>
         internal static DateTime? InferDate(int month, int day, DateTime baseDate)
