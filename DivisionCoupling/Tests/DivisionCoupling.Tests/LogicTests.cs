@@ -48,6 +48,45 @@ namespace DivisionCoupling.Tests
                 out destPath);
         }
 
+        // ---- 前回の分割ファイルの残り ----
+
+        [TestMethod]
+        public void FindPartFilesは同じ名前の分割ファイルだけを番号順に返し途切れた番号も拾う()
+        {
+            String src = CreateFile("fname.jpg", 10);
+            foreach (String name in new[] { "fname.jpg.div010", "fname.jpg.div002", "fname.jpg.div001", "fname.jpg.div1000",
+                "other.jpg.div001", "fname.jpg.div001.bak", "fname.jpg.divx", "fname.jpg.div01", "xfname.jpg.div003" })
+            {
+                File.WriteAllBytes(Path.Combine(_workDir, name), new byte[1]);
+            }
+
+            CollectionAssert.AreEqual(
+                new[] { "fname.jpg.div001", "fname.jpg.div002", "fname.jpg.div010", "fname.jpg.div1000" },
+                Logic.FindPartFiles(src).Select(Path.GetFileName).ToArray());
+            Assert.AreEqual(0, Logic.FindPartFiles(Path.Combine(_workDir, "none.jpg")).Count);
+            Assert.AreEqual(0, Logic.FindPartFiles(Path.Combine(_workDir, "nodir", "fname.jpg")).Count);
+        }
+
+        [TestMethod]
+        public void 前回の分割ファイルを消してから分割し直せば結合で古いデータが混ざらない()
+        {
+            String src = CreateFile("data.bin", 10 * 1024);
+            byte[] original = File.ReadAllBytes(src);
+            String dummy;
+            Assert.AreEqual(ProcessError.None, SplitAll(src, 1024, out dummy));
+            Assert.AreEqual(10, Logic.FindPartFiles(src).Count);
+
+            String failedPath;
+            Assert.IsTrue(Logic.TryDeleteFiles(Logic.FindPartFiles(src), out failedPath));
+            Assert.IsNull(failedPath);
+            Assert.AreEqual(ProcessError.None, SplitAll(src, 3 * 1024, out dummy));
+            Assert.AreEqual(4, Logic.FindPartFiles(src).Count);
+
+            File.Delete(src);
+            Assert.AreEqual(ProcessError.None, Logic.Merge(src, () => true));
+            CollectionAssert.AreEqual(original, File.ReadAllBytes(src));
+        }
+
         // ---- ファイル名 ----
 
         [TestMethod]

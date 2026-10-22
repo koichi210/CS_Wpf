@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace DivisionCoupling
 {
@@ -33,6 +35,53 @@ namespace DivisionCoupling
         public static String MakePartPath(String path, int index)
         {
             return String.Format(CultureInfo.InvariantCulture, "{0}.div{1:000}", path, index);
+        }
+
+        /// <summary>
+        /// srcPathを分割したファイル(srcPath.div001, .div002 …)のうち、今あるものを番号順に返す。
+        /// 番号が途切れていても全部拾う(後ろの番号だけ残っていても、次に分割したときにその後ろへつながってしまうため)。
+        /// フォルダが無い・読めないなど調べられないときは空にする
+        /// </summary>
+        public static List<String> FindPartFiles(String srcPath)
+        {
+            try
+            {
+                String dir = Path.GetDirectoryName(Path.GetFullPath(srcPath));
+                String name = Path.GetFileName(srcPath);
+                Regex partName = new Regex("^" + Regex.Escape(name) + @"\.div(\d{3,})$", RegexOptions.IgnoreCase);
+                return Directory.GetFiles(dir, name + ".div*")
+                    .Select(path => new { Path = path, Match = partName.Match(Path.GetFileName(path)) })
+                    .Where(x => x.Match.Success)
+                    .OrderBy(x => Int64.Parse(x.Match.Groups[1].Value, CultureInfo.InvariantCulture))
+                    .Select(x => x.Path)
+                    .ToList();
+            }
+            catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException
+                || ex is ArgumentException || ex is NotSupportedException || ex is OverflowException)
+            {
+                return new List<String>();
+            }
+        }
+
+        /// <summary>
+        /// ファイルをまとめて消す。消せなかったら、そのファイル名をfailedPathに返してfalse
+        /// </summary>
+        public static Boolean TryDeleteFiles(IEnumerable<String> paths, out String failedPath)
+        {
+            foreach (String path in paths)
+            {
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    failedPath = path;
+                    return false;
+                }
+            }
+            failedPath = null;
+            return true;
         }
 
         // 選んだ分割ファイルから最後の拡張子を外したものが結合後のファイル名

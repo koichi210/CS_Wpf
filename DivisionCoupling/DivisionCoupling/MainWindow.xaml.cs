@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -53,6 +55,31 @@ namespace DivisionCoupling
 
             // KB → バイト。int に収まらない値は分割サイズエラーにする
             _divSize = Logic.ToDivSize(Logic.ParseDivSizeKb(textBox_Size.Text));
+
+            // 前回の分割ファイルが残っていると、今回の個数が前回より少ないときに後ろの番号が残り、
+            // 結合で古いデータまでつながってしまう。1つ目を作る前に、同じ名前の分割ファイルを消すか確認する
+            // (元ファイルが無い・分割サイズが不正なときは、これまでどおり分割処理のエラー表示に任せる)
+            if (_divSize > 0 && File.Exists(_srcPath))
+            {
+                List<String> oldParts = Logic.FindPartFiles(_srcPath);
+                if (oldParts.Count > 0)
+                {
+                    String found = (oldParts.Count == 1) ? oldParts[0]
+                        : oldParts[0] + "\n～ " + Path.GetFileName(oldParts[oldParts.Count - 1]) + " (" + oldParts.Count + "個)";
+                    if (MessageBox.Show(this, "前回の分割ファイルが残っています。削除してから分割しますか？\n\n" + found, "Warning", MessageBoxButton.YesNo) == MessageBoxResult.No)
+                    {
+                        MessageBox.Show(this, "処理を中断しました。", _appName);
+                        return;
+                    }
+
+                    String failedPath;
+                    if (!Logic.TryDeleteFiles(oldParts, out failedPath))
+                    {
+                        MessageBox.Show(this, "前回の分割ファイルを削除できませんでした。\n\n" + failedPath, "error", MessageBoxButton.OK);
+                        return;
+                    }
+                }
+            }
 
             StartProcess(Split);
         }
