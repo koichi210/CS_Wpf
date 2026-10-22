@@ -97,6 +97,8 @@ namespace MotionCapture
             _avi.SetResize(_settings.Resize, _settings.ResizeRectWidth, _settings.ResizeRectHeight);
             _avi.SetRecordMousePoint(_settings.MousePointRec);
 
+            // ログオフ・シャットダウンがキャンセルされて画面が残っていれば、これからの録画の結果は表示する
+            _closing = false;
             _avi.StartRecord();
         }
 
@@ -161,7 +163,7 @@ namespace MotionCapture
         }
 
         // 確認せずに中断し、ファイルを閉じ終わるまで待つ
-        private void StopRecordAndWait()
+        internal void StopRecordAndWait()
         {
             _closing = true;
             IsEnabled = false;  // 待っている間に操作させない

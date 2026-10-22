@@ -223,6 +223,40 @@ namespace MotionCapture.Tests
             });
         }
 
+        [TestMethod]
+        public void ログオフがキャンセルされた後の録画でも結果を出す()
+        {
+            String path = Path.Combine(_workDir, "after_session_ending.avi");
+            StaRunner.Run(() =>
+            {
+                MainWindow window = new MainWindow();
+                List<String> shown = new List<String>();
+                window.ShowMessage = (text, caption, button) =>
+                {
+                    shown.Add(text);
+                    return MessageBoxResult.OK;
+                };
+
+                // SessionEndingで止めた後、ログオフがキャンセルされて画面が残った
+                window.StopRecordAndWait();
+
+                // 画面から録画を始める（圧縮の選択ダイアログは出さない）
+                window.Avi.SetCompress(false);
+                ((TextBox)window.FindName("textBox_SaveFileName")).Text = path;
+                ((TextBox)window.FindName("textBox_CaptRectWidth")).Text = "8";
+                ((TextBox)window.FindName("textBox_CaptRectHeight")).Text = "8";
+                ((TextBox)window.FindName("textBox_CaptFps")).Text = "10";
+                ((TextBox)window.FindName("textBox_TimeoutSec")).Text = "1";
+                ((TextBox)window.FindName("textBox_SkipFrame")).Text = "10";
+                ((CheckBox)window.FindName("checkBox_MousePointRec")).IsChecked = false;
+                ((Button)window.FindName("button_Record")).RaiseEvent(new RoutedEventArgs(ButtonBase.ClickEvent));
+                WaitForRecordAndDoEvents(window.Avi);
+
+                CollectionAssert.AreEqual(new[] { _timeoutMessage }, shown, "以前は終了処理中のままで何も出さなかった");
+            });
+            Assert.AreEqual(10, AviReader.Read(path).Length);
+        }
+
         // 一時フォルダへ非圧縮で録画を始める（8×8、10FPS、コマ送り10＝1フレーム100ms）
         private static ManageAvi StartRecording(MainWindow window, String path, uint sec)
         {
