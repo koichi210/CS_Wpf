@@ -34,12 +34,26 @@ namespace CubNotice
 
         public List<CubEvent> Events { get; private set; } = new List<CubEvent>();
 
-        public void Load()
+        /// <returns>ファイルが壊れていて読めなかったときは退避先のパス(予定は空になる)。読めたとき・無かったときはnull</returns>
+        public string Load()
         {
-            Events = File.Exists(filePath)
-                ? JsonConvert.DeserializeObject<List<CubEvent>>(File.ReadAllText(filePath, Encoding.UTF8)) ?? new List<CubEvent>()
-                : new List<CubEvent>();
+            string brokenBackup = null;
+            Events = new List<CubEvent>();
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    Events = JsonConvert.DeserializeObject<List<CubEvent>>(File.ReadAllText(filePath, Encoding.UTF8)) ?? new List<CubEvent>();
+                    Events.RemoveAll(e => e == null);
+                }
+                catch (JsonException)
+                {
+                    // 起動できなくならないよう空の一覧で始める。閉じるときの保存で元の中身を上書きしないよう、壊れたファイルは退避しておく
+                    brokenBackup = DataLocation.MoveBrokenFile(filePath);
+                }
+            }
             Sort();
+            return brokenBackup;
         }
 
         public void Save()

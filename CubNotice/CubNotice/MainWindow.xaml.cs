@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -14,13 +15,15 @@ namespace CubNotice
     {
         private readonly EventStore store = new EventStore(DataLocation.EventsFile);
         private AppSettings settings;
+        private int keyDeletedCount;    // Deleteキーで消して、まだ保存していない行数
 
         public MainWindow()
         {
             InitializeComponent();
 
-            settings = AppSettings.Load(DataLocation.SettingsFile);
-            store.Load();
+            string brokenSettings;
+            settings = AppSettings.Load(DataLocation.SettingsFile, out brokenSettings);
+            string brokenEvents = store.Load();
 
             PageNumberBox.Text = settings.PageNumber.ToString();
             HeaderBox.Text = settings.DefaultHeader;
@@ -28,6 +31,24 @@ namespace CubNotice
             PlaceholderHelp.Text = "差し込み項目: " + string.Join("  ", AnnouncementFormatter.Placeholders)
                 + "\nデータの保存先: " + DataLocation.GetFolder();
             RefreshGrid();
+
+            // Deleteキーで一覧から消した行も、その場で保存する
+            ((INotifyCollectionChanged)EventGrid.Items).CollectionChanged += EventGridItems_CollectionChanged;
+
+            // 壊れていて読めなかったファイルは、画面が出てから知らせる
+            List<string> broken = new List<string>();
+            if (brokenSettings != null)
+            {
+                broken.Add("設定ファイルが壊れていて読めなかったため、既定の設定で起動しました。\n壊れたファイル: " + brokenSettings);
+            }
+            if (brokenEvents != null)
+            {
+                broken.Add("予定のファイルが壊れていて読めなかったため、予定が空の状態で起動しました。\n壊れたファイル: " + brokenEvents);
+            }
+            if (broken.Count > 0)
+            {
+                Loaded += (s, e) => MessageBox.Show(this, string.Join("\n\n", broken), Title, MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
         }
 
         // ---- データ追加フェーズ ----
@@ -141,6 +162,28 @@ namespace CubNotice
             {
                 store.Save();
                 StatusText.Text = "変更を保存しました。";
+            }), DispatcherPriority.Background);
+        }
+
+        // 一覧(DataGrid)のDeleteキーで消した行。以前は閉じるときにしか保存されなかった
+        // (「選択行を削除」ボタンや取り込みは一覧を作り直すのでResetになり、ここでは保存しない)
+        private void EventGridItems_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action != NotifyCollectionChangedAction.Remove)
+            {
+                return;
+            }
+            // 複数行を消すと1行ずつ届くので、まとめて1回保存する
+            keyDeletedCount += e.OldItems.Count;
+            if (keyDeletedCount > e.OldItems.Count)
+            {
+                return;
+            }
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                store.Save();
+                StatusText.Text = keyDeletedCount + "件の予定を削除しました。";
+                keyDeletedCount = 0;
             }), DispatcherPriority.Background);
         }
 

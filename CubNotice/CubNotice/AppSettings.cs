@@ -22,13 +22,24 @@ namespace CubNotice
         /// <summary>取り込むPDFのページ番号(1始まり)</summary>
         public int PageNumber { get; set; } = 2;
 
-        public static AppSettings Load(string filePath)
+        /// <param name="brokenBackup">ファイルが壊れていて読めなかったときは退避先のパス(設定は既定値になる)。それ以外はnull</param>
+        public static AppSettings Load(string filePath, out string brokenBackup)
         {
+            brokenBackup = null;
             if (!File.Exists(filePath))
             {
                 return new AppSettings();
             }
-            return JsonConvert.DeserializeObject<AppSettings>(File.ReadAllText(filePath, Encoding.UTF8)) ?? new AppSettings();
+            try
+            {
+                return JsonConvert.DeserializeObject<AppSettings>(File.ReadAllText(filePath, Encoding.UTF8)) ?? new AppSettings();
+            }
+            catch (JsonException)
+            {
+                // 起動できなくならないよう既定値で始める。壊れたファイルは、設定の保存で上書きしないよう退避しておく
+                brokenBackup = DataLocation.MoveBrokenFile(filePath);
+                return new AppSettings();
+            }
         }
 
         public void Save(string filePath)
@@ -70,6 +81,21 @@ namespace CubNotice
         public static string SettingsFile
         {
             get { return Path.Combine(GetFolder(), "settings.json"); }
+        }
+
+        /// <summary>
+        /// 壊れていて読めなかったファイルを、同じフォルダに「元の名前.broken_日時」で退避する。退避先のパスを返す。
+        /// </summary>
+        public static string MoveBrokenFile(string filePath)
+        {
+            string backup = filePath + ".broken_" + DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            string candidate = backup;
+            for (int i = 2; File.Exists(candidate); i++)
+            {
+                candidate = backup + "_" + i;
+            }
+            File.Move(filePath, candidate);
+            return candidate;
         }
     }
 }

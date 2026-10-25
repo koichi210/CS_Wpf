@@ -261,6 +261,62 @@ namespace CubNotice.Tests
         }
 
         [TestMethod]
+        public void Store_壊れたファイルは退避して空の一覧で読み込む()
+        {
+            string path = Path.Combine(Path.GetTempPath(), "CubNoticeTest_" + Guid.NewGuid().ToString("N"), "events.json");
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                File.WriteAllText(path, "[{\"Date\": \"2026-10-");
+
+                // 以前は例外になり、ウィンドウを作る途中で落ちて起動できなかった
+                EventStore store = new EventStore(path);
+                string backup = store.Load();
+
+                Assert.AreEqual(0, store.Events.Count);
+                Assert.IsNotNull(backup);
+                Assert.IsFalse(File.Exists(path), "閉じるときの保存で上書きしないよう退避する");
+                Assert.AreEqual("[{\"Date\": \"2026-10-", File.ReadAllText(backup));
+
+                // 読めるファイル・無いファイルではnull
+                store.Save();
+                Assert.IsNull(new EventStore(path).Load());
+                Assert.IsNull(new EventStore(path + ".none").Load());
+            }
+            finally
+            {
+                Directory.Delete(Path.GetDirectoryName(path), true);
+            }
+        }
+
+        [TestMethod]
+        public void Settings_壊れたファイルは退避して既定値で読み込む()
+        {
+            string path = Path.Combine(Path.GetTempPath(), "CubNoticeTest_" + Guid.NewGuid().ToString("N"), "settings.json");
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                File.WriteAllText(path, "{\"PageNumber\": \"abc\"}");
+
+                string backup;
+                AppSettings settings = AppSettings.Load(path, out backup);
+
+                Assert.AreEqual(2, settings.PageNumber);
+                Assert.IsNotNull(backup);
+                Assert.IsFalse(File.Exists(path));
+                Assert.IsTrue(File.Exists(backup));
+
+                settings.Save(path);
+                AppSettings.Load(path, out backup);
+                Assert.IsNull(backup);
+            }
+            finally
+            {
+                Directory.Delete(Path.GetDirectoryName(path), true);
+            }
+        }
+
+        [TestMethod]
         public void Store_同じ日付とタイトルは上書きされる()
         {
             EventStore store = new EventStore(Path.Combine(Path.GetTempPath(), "unused.json"));
