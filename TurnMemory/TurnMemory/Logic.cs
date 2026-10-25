@@ -165,13 +165,13 @@ namespace TurnMemory
             return index;
         }
 
-        // 記憶時間タイマ1回分。表示する残り秒数(5→0)を返し、0を表示した次で finished=true(解答の入力へ)
+        // 記憶時間タイマ1回分。残り秒数を1減らして返す(4→1)。0になったら finished=true(解答の入力へ)。
+        // 最初の WaitMax は全部表示し終えたときにすぐ出すので、表示は WaitMax～1 の WaitMax 回になる
         public int WaitTick(out bool finished)
         {
-            int seconds = Wait;
-
             Wait--;
-            finished = Wait < 0;
+            int seconds = Wait;
+            finished = Wait <= 0;
             if (finished)
             {
                 State = GameState.End;

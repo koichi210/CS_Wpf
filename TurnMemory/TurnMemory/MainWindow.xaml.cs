@@ -128,21 +128,25 @@ namespace TurnMemory
             if (finished)
             {
                 _showTimer.Stop();
+                textTitle.Text = Logic.RememberText(_logic.Wait);
                 _waitTimer.Start();
             }
         }
 
-        // 記憶時間タイマ。0秒まで表示したら解答の入力を受け付ける
+        // 記憶時間タイマ。1秒まで表示し、0になったら解答の入力を受け付ける
         internal void WaitProc()
         {
             bool finished;
             int seconds = _logic.WaitTick(out finished);
-            textTitle.Text = Logic.RememberText(seconds);
 
             if (finished)
             {
                 InitProc();
                 _waitTimer.Stop();
+            }
+            else
+            {
+                textTitle.Text = Logic.RememberText(seconds);
             }
         }
 

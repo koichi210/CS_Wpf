@@ -77,13 +77,14 @@ namespace TurnMemory.Tests
                     window.ShowProc();
                 }
                 Assert.AreEqual("16", window.Cell(3, 3).Text);
-
-                window.WaitProc();
                 Assert.AreEqual("5秒間覚えて下さい。", window.textTitle.Text);
-                for (int i = 0; i < 5; i++)
+
+                for (int i = 0; i < 4; i++)
                 {
                     window.WaitProc();
                 }
+                Assert.AreEqual("1秒間覚えて下さい。", window.textTitle.Text);
+                window.WaitProc();
 
                 Assert.AreEqual("解答を入力して下さい。", window.textTitle.Text);
                 Assert.AreEqual("スタート", window.buttonStart.Content);

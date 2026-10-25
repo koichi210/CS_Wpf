@@ -121,7 +121,7 @@ namespace TurnMemory.Tests
         }
 
         [TestMethod]
-        public void 記憶時間は5から0まで数えてから解答の入力に移る()
+        public void 記憶時間は5から1まで5回数えてから解答の入力に移る()
         {
             Logic logic = StartedLogic(3);
             bool finished;
@@ -130,13 +130,22 @@ namespace TurnMemory.Tests
                 logic.ShowNext(out finished);
             }
 
-            List<int> shown = new List<int>();
-            do
+            // 最初の5は全部表示し終えたときに出し、そのあと1秒ごとのタイマで減らす
+            List<int> shown = new List<int> { logic.Wait };
+            int ticks = 0;
+            while (true)
             {
-                shown.Add(logic.WaitTick(out finished));
-            } while (!finished);
+                int seconds = logic.WaitTick(out finished);
+                ticks++;
+                if (finished)
+                {
+                    break;
+                }
+                shown.Add(seconds);
+            }
 
-            CollectionAssert.AreEqual(new[] { 5, 4, 3, 2, 1, 0 }, shown);
+            CollectionAssert.AreEqual(new[] { 5, 4, 3, 2, 1 }, shown);
+            Assert.AreEqual(Logic.WaitMax, ticks);
             Assert.AreEqual(GameState.End, logic.State);
             Assert.AreEqual(Logic.WaitMax, logic.Wait);
         }
