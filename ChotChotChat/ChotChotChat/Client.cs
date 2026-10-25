@@ -100,9 +100,9 @@ namespace ChotChotChat
                 ns.ReadTimeout = _timeoutMsec;
                 ns.WriteTimeout = _timeoutMsec;
 
-                // データ送信
+                // データ送信(改行を含むメッセージでも1件と分かるよう、バイト数を付けて送る)
                 byte[] sendBytes = Encoding.UTF8.GetBytes(sendText + Environment.NewLine);
-                ns.Write(sendBytes, 0, sendBytes.Length);
+                NetworkStreamReader.WriteMessage(ns, sendBytes);
 
                 // サーバーから送られたデータ(応答)を受信する
                 byte[] reply = NetworkStreamReader.ReceiveLine(ns);

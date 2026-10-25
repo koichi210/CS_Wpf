@@ -76,6 +76,22 @@ namespace ChotChotChat.Tests
         }
 
         [TestMethod]
+        public void 改行を含むメッセージも途中で切れずに受け取る()
+        {
+            _server.Listen("127.0.0.1");
+            Task<string> accept = Task.Run(() => _server.Accept());
+            _client.Connect("127.0.0.1");
+            Wait(accept);
+
+            Task<string> receive = Task.Run(() => _server.Receive());
+            string reply = _client.Send("1行目\r\n2行目");
+            string received = Wait(receive);
+
+            Assert.AreEqual("1行目\r\n2行目\r\n", received);
+            Assert.AreEqual("10\n", reply);
+        }
+
+        [TestMethod]
         public void 送る前にクライアントが切断したらサーバーはnullを返す()
         {
             _server.Listen("127.0.0.1");

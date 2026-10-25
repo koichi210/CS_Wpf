@@ -104,7 +104,7 @@ namespace ChotChotChat
         }
 
         /// <summary>
-        /// クライアントから1行受信し、受信した文字数を応答する(ワーカースレッドで呼ぶ)。
+        /// クライアントからメッセージを1件受信し、受信した文字数を応答する(ワーカースレッドで呼ぶ)。
         /// 受信した文字列(改行込み)を返す。応答前にクライアントが切断していたら null。
         /// </summary>
         public String Receive()
@@ -129,7 +129,7 @@ namespace ChotChotChat
                 ns.WriteTimeout = _timeoutMsec;
 
                 // クライアントから送られたデータ受信
-                byte[] received = NetworkStreamReader.ReceiveLine(ns);
+                byte[] received = NetworkStreamReader.ReceiveMessage(ns);
                 if (received == null)
                 {
                     return null;
