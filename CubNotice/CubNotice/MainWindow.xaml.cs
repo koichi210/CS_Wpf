@@ -189,7 +189,7 @@ namespace CubNotice
         }
 
         // 一覧のDeleteキー(DataGrid.DeleteCommand)で消す前にも、「選択行を削除」ボタンと同じ確認を出す。
-        // 以前は確認なしで消えていた。OKなら一覧から消え、EventGridItems_CollectionChangedでその場で保存される
+        // 以前は確認なしで消えていた。「はい」なら一覧から消え(初期選択は「いいえ」)、EventGridItems_CollectionChangedでその場で保存される
         // (DeleteCommandはセルの編集中には実行されないので、編集中のDeleteキーは今まで通り文字の削除になる)
         private void EventGrid_PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
         {
@@ -202,7 +202,7 @@ namespace CubNotice
             {
                 return;
             }
-            if (MessageBox.Show(this, count + "件の予定を削除しますか？", Title, MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+            if (MessageBox.Show(this, count + "件の予定を削除しますか？", Title, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes)
             {
                 e.Handled = true;   // 消さない
             }
@@ -215,7 +215,7 @@ namespace CubNotice
             {
                 return;
             }
-            if (MessageBox.Show(this, selected.Count + "件の予定を削除しますか？", Title, MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+            if (MessageBox.Show(this, selected.Count + "件の予定を削除しますか？", Title, MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No) != MessageBoxResult.Yes)
             {
                 return;
             }
