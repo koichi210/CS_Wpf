@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Threading;
 using Microsoft.Win32;
 
@@ -185,6 +186,26 @@ namespace CubNotice
                 StatusText.Text = keyDeletedCount + "件の予定を削除しました。";
                 keyDeletedCount = 0;
             }), DispatcherPriority.Background);
+        }
+
+        // 一覧のDeleteキー(DataGrid.DeleteCommand)で消す前にも、「選択行を削除」ボタンと同じ確認を出す。
+        // 以前は確認なしで消えていた。OKなら一覧から消え、EventGridItems_CollectionChangedでその場で保存される
+        // (DeleteCommandはセルの編集中には実行されないので、編集中のDeleteキーは今まで通り文字の削除になる)
+        private void EventGrid_PreviewExecuted(object sender, ExecutedRoutedEventArgs e)
+        {
+            if (e.Command != DataGrid.DeleteCommand)
+            {
+                return;
+            }
+            int count = EventGrid.SelectedItems.OfType<CubEvent>().Count();
+            if (count == 0)
+            {
+                return;
+            }
+            if (MessageBox.Show(this, count + "件の予定を削除しますか？", Title, MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK)
+            {
+                e.Handled = true;   // 消さない
+            }
         }
 
         private void DeleteRowButton_Click(object sender, RoutedEventArgs e)

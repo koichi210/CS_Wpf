@@ -26,7 +26,7 @@
                     <DataGrid x:Name="EventGrid" AutoGenerateColumns="False" CanUserAddRows="False"
                               CanUserDeleteRows="True" HeadersVisibility="Column" RowHeight="NaN"
                               VerticalGridLinesBrush="LightGray" HorizontalGridLinesBrush="LightGray"
-                              CellEditEnding="EventGrid_CellEditEnding">
+                              CellEditEnding="EventGrid_CellEditEnding" CommandManager.PreviewExecuted="EventGrid_PreviewExecuted">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="開催日" Binding="{Binding Date, StringFormat=yyyy/MM/dd}" Width="85" />
                             <DataGridTextColumn Header="曜日" Binding="{Binding DayOfWeekText}" Width="45" />
