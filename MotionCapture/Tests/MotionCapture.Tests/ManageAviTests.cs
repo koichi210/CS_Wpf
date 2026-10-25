@@ -200,7 +200,7 @@ namespace MotionCapture.Tests
         public void 途中で停止すると保存しましたのメッセージを出す()
         {
             String path = Path.Combine(_workDir, "stop.avi");
-            // 100秒×10FPS、コマ送り10(=100ms待ち)なので止めなければ100秒以上かかる
+            // 100秒×10FPSなので止めなければ100秒かかる
             ManageAvi avi = MakeAvi(path, 8, 8, 10, 100);
             avi.SetSkipFrame(10);
             String text = null;
@@ -374,18 +374,55 @@ namespace MotionCapture.Tests
         }
 
         [TestMethod]
-        public void コマ送りはフレーム間の待ち時間に直す()
+        public void コマ送りは画面を取り込む間隔に直す()
         {
             ManageAvi avi = new ManageAvi();
 
             avi.SetSkipFrame(0);
-            Assert.AreEqual(1, avi.SkipFrameMs);
+            Assert.AreEqual(0, avi.SkipFrameMs, "0なら毎フレーム取り込む");
             avi.SetSkipFrame(10);
             Assert.AreEqual(100, avi.SkipFrameMs);
             avi.SetSkipFrame(3);
             Assert.AreEqual(333, avi.SkipFrameMs);
             avi.SetSkipFrame(2000);
             Assert.AreEqual(0, avi.SkipFrameMs);
+        }
+
+        [TestMethod]
+        public void フレームの時刻はフレーム番号をFPSで割った秒()
+        {
+            Assert.AreEqual(0, ManageAvi.FrameTimeMs(0, 10));
+            Assert.AreEqual(100, ManageAvi.FrameTimeMs(1, 10));
+            Assert.AreEqual(666, ManageAvi.FrameTimeMs(2, 3));
+            Assert.AreEqual(1000, ManageAvi.FrameTimeMs(3, 3));
+            Assert.AreEqual(0, ManageAvi.FrameTimeMs(5, 0));
+        }
+
+        [TestMethod]
+        public void コマ送りに関係なく録画秒数ぶんの実時間をかけて録画する()
+        {
+            // 以前は取り込みの間隔がコマ送りで決まり（未指定なら1ms）、10FPS×1秒の10フレームが一瞬で撮れて、
+            // 再生すると実際より速かった
+            foreach (uint skipFrame in new uint[] { 0, 2, 10 })
+            {
+                String path = Path.Combine(_workDir, "realtime" + skipFrame + ".avi");
+                ManageAvi avi = MakeAvi(path, 8, 8, 10, 1);
+                avi.SetSkipFrame(skipFrame);
+                Stopwatch watch = null;
+
+                RunSta(() =>
+                {
+                    Boolean completed;
+                    watch = Stopwatch.StartNew();
+                    Assert.AreEqual(AviError.Success, avi.RecordSync(out completed));
+                    watch.Stop();
+                });
+
+                // 最後のフレーム(9番)は0.9秒の画面
+                Assert.IsTrue(watch.ElapsedMilliseconds >= 850 && watch.ElapsedMilliseconds < 5000,
+                    "コマ送り" + skipFrame + ": " + watch.ElapsedMilliseconds + "ms");
+                Assert.AreEqual(10, AviReader.Read(path).Length, "コマ送り" + skipFrame);
+            }
         }
 
         [TestMethod]

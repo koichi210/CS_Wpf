@@ -257,7 +257,7 @@ namespace MotionCapture.Tests
             Assert.AreEqual(10, AviReader.Read(path).Length);
         }
 
-        // 一時フォルダへ非圧縮で録画を始める（8×8、10FPS、コマ送り10＝1フレーム100ms）
+        // 一時フォルダへ非圧縮で録画を始める（8×8、10FPS＝1フレーム100ms、コマ送り10＝1秒に10回取り込む）
         private static ManageAvi StartRecording(MainWindow window, String path, uint sec)
         {
             ManageAvi avi = window.Avi;

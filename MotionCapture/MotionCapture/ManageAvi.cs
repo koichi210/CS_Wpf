@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Windows;
@@ -23,8 +24,9 @@ namespace MotionCapture
     /// <summary>
     /// MFC版manage_avi.cc（画面をAVIファイルに録画する）をそのまま移したもの。
     /// VfW(avifil32.dll)をP/Invokeで呼び、MFC版と同じ形式のAVIを作る。
-    /// ・フレームレート(dwRate/dwScale)と総フレーム数(録画秒数×FPS)はヘッダーに書くだけで、
-    ///   実際は「1フレーム撮る→コマ送り分だけ待つ」を総フレーム数だけ繰り返す（MFC版と同じ）
+    /// ・フレームレート(dwRate/dwScale)と総フレーム数(録画秒数×FPS)をヘッダーに書き、
+    ///   フレーム番号nは録画開始からn/FPS秒の画面にする（再生すると実際の時間と同じ速さになる。MFC版と同じ）。
+    ///   コマ送りは1秒に画面を取り込む回数で、取り込まないフレームには前の画像をもう一度書く
     /// ・リサイズするときは記録領域をStretchBlt(COLORONCOLOR)で縮小・拡大して書き込む
     /// ・マウスポインタの描き込みもリサイズの倍率に合わせて位置をずらす
     /// </summary>
@@ -53,7 +55,7 @@ namespace MotionCapture
         private uint _quality = unchecked((uint)-1);    // 0～10,000 (-1 はドライバーの既定値)
         private uint _bitmapBpp = 0;        // 16,24,32 (1/4/8 need a color table, so they are not supported)
         private uint _timeoutSec = 0;
-        private int _skipFrameMs = 0;       // フレーム間の待ち時間（ミリ秒）
+        private int _skipFrameMs = 0;       // 画面を取り込む間隔（ミリ秒。0 なら毎フレーム取り込む）
 
         // 録画中に使う
         private AVISTREAMINFOW _aviStreamInfo;
@@ -91,9 +93,10 @@ namespace MotionCapture
             _timeoutSec = recordSec;
         }
 
+        // コマ送り = 1秒に画面を取り込む回数（0 なら毎フレーム取り込む）
         public void SetSkipFrame(uint skipFrame)
         {
-            _skipFrameMs = 1;
+            _skipFrameMs = 0;
             if (skipFrame > 0)
             {
                 _skipFrameMs = (int)(1000 / skipFrame);
@@ -517,34 +520,55 @@ namespace MotionCapture
 
             IntPtr stream = _compress ? _compressAviStream : _aviStream;
 
+            // フレーム番号 n は録画開始から n / FPS 秒の画面にする（再生すると実際の時間と同じ速さになる）
+            Stopwatch watch = Stopwatch.StartNew();
+            long nextCaptureMs = 0;     // 次に画面を取り込むフレームの時刻（録画開始からのミリ秒）
+
             // ファイルを作った以上は、すぐ止められても最初の1フレームは書く（フレームのない AVI を残さない）
             AviError err = AviError.Success;
             uint frameNo = 0;
-            for (; frameNo == 0 || (frameNo < _aviStreamInfo.dwLength && _executing); frameNo++)
+            while (err == AviError.Success && (frameNo == 0 || (frameNo < _aviStreamInfo.dwLength && _executing)))
             {
-                // 画面の記録領域を取り込む
-                if (_resize)
+                // このフレームの時刻まで待つ
+                long frameMs = FrameTimeMs(frameNo, _frameRate);
+                long nowMs = watch.ElapsedMilliseconds;
+                if (nowMs < frameMs)
                 {
-                    StretchBlt(memDc, 0, 0, _frameWidth, _frameHeight,
-                        dcScreen, srcLeft, srcTop, srcWidth, srcHeight, SRCCOPY);
-                }
-                else
-                {
-                    BitBlt(memDc, 0, 0, _frameWidth, _frameHeight, dcScreen, srcLeft, srcTop, SRCCOPY);
+                    Thread.Sleep((int)(frameMs - nowMs));
                 }
 
-                if (_recordMousePoint)
+                // 画面の記録領域を取り込む。コマ送りの指定があれば、その間隔が経つまでは前の画像をもう一度書く
+                if (frameNo == 0 || frameMs >= nextCaptureMs)
                 {
-                    DrawCursor(memDc, srcLeft, srcTop, scaleX, scaleY);
+                    if (_resize)
+                    {
+                        StretchBlt(memDc, 0, 0, _frameWidth, _frameHeight,
+                            dcScreen, srcLeft, srcTop, srcWidth, srcHeight, SRCCOPY);
+                    }
+                    else
+                    {
+                        BitBlt(memDc, 0, 0, _frameWidth, _frameHeight, dcScreen, srcLeft, srcTop, SRCCOPY);
+                    }
+
+                    if (_recordMousePoint)
+                    {
+                        DrawCursor(memDc, srcLeft, srcTop, scaleX, scaleY);
+                    }
+                    nextCaptureMs = frameMs + _skipFrameMs;
                 }
 
-                // ディスクがいっぱいなどで書けなければ、そこで止めてエラーにする（「保存しました」とは出さない）
-                if (AVIERR_OK != AVIStreamWrite(stream, (int)frameNo, 1, pvBits, sizeImage, AVIIF_KEYFRAME, IntPtr.Zero, IntPtr.Zero))
+                // 取り込みや書き込みが間に合わず、次のフレームの表示時間も過ぎていたら、その分も同じ画像で埋める
+                // （詰めて書くと、再生したときに実際より速くなる）
+                do
                 {
-                    err = AviError.WriteFrame;
-                    break;
-                }
-                Thread.Sleep(_skipFrameMs);
+                    // ディスクがいっぱいなどで書けなければ、そこで止めてエラーにする（「保存しました」とは出さない）
+                    if (AVIERR_OK != AVIStreamWrite(stream, (int)frameNo, 1, pvBits, sizeImage, AVIIF_KEYFRAME, IntPtr.Zero, IntPtr.Zero))
+                    {
+                        err = AviError.WriteFrame;
+                        break;
+                    }
+                    frameNo++;
+                } while (frameNo < _aviStreamInfo.dwLength && FrameTimeMs(frameNo + 1, _frameRate) <= watch.ElapsedMilliseconds && _executing);
             }
 
             SelectObject(memDc, oldBitmap);
@@ -554,6 +578,12 @@ namespace MotionCapture
 
             writtenFrames = (int)frameNo;
             return err;
+        }
+
+        // フレーム番号 frameNo を表示する時刻（録画開始からのミリ秒）
+        internal static long FrameTimeMs(uint frameNo, uint frameRate)
+        {
+            return frameRate > 0 ? (long)frameNo * 1000 / frameRate : 0;
         }
 
         // マウスポインタを録画画像に描き込む
