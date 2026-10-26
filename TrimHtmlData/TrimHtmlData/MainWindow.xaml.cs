@@ -27,7 +27,8 @@ namespace TrimHtmlData
         // (旧XMLからJSONへの移行はWinForms版の起動時に済んでいる前提。Mailer/FileArranger等のWPF版と同じ方針)
         private static readonly String[] _profileExtensions = { "*.json" };
 
-        private readonly String _userDataFolder;
+        // 「データ保存先を変更」で切り替わるので readonly にしない
+        private String _userDataFolder;
         private readonly StcUtils _util = new StcUtils();
         private readonly StcFileInputOutput _fio = new StcFileInputOutput();
         internal WpfSaveRestore SaveRestore { get; } = new WpfSaveRestore();
@@ -61,13 +62,25 @@ namespace TrimHtmlData
 
             RegisterSettingItems();
 
-            // 起動時は既定の設定ファイル(TrimHtmlData.json)を読む。無ければ既定値(空欄・チェック無し)
+            LoadProfilesFromDataFolder();
+
+            // 保存先を変更したら、再起動しなくても新しい保存先のプロファイルを読み込み直す
+            WpfDataFolderMenu.Attach(this, () => DataFolderMenu.ChangeDataFolder(_appName, _userDataFolder,
+                (oldFolder, newFolder) => DataFolderMenu.MoveProfiles(oldFolder, newFolder, _appName),
+                newFolder =>
+                {
+                    _userDataFolder = newFolder;
+                    LoadProfilesFromDataFolder();
+                }));
+        }
+
+        // 現在のデータ保存先から、既定の設定ファイルとプロファイル一覧を読み込む(起動時と保存先変更時に使う)
+        private void LoadProfilesFromDataFolder()
+        {
+            // 既定の設定ファイル(TrimHtmlData.json)を読む。無ければ既定値(空欄・チェック無し)
             SaveRestore.LoadOrDefault(Path.Combine(_userDataFolder, _settingFileName));
             // WinForms版と同じく既定の設定ファイルを選んだ状態にする(SelectionChangedでもう一度読み込まれる)
             WpfProfile.UpdateProfileList(comboBox_LoadSetting, _profileExtensions, _settingFileName, _userDataFolder);
-
-            WpfDataFolderMenu.Attach(this, () => DataFolderMenu.ChangeDataFolder(_appName, _userDataFolder,
-                (oldFolder, newFolder) => DataFolderMenu.MoveProfiles(oldFolder, newFolder, _appName)));
         }
 
         private void RegisterSettingItems()
