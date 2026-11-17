@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Windows;
+using System.Windows.Input;
 
 namespace ImageViewer
 {
@@ -21,6 +22,9 @@ namespace ImageViewer
         private const string _msgSelectThumbnailDir = "サムネイル表示対象のフォルダ選択";
         private const string _fileFilter = "テキストファイル (*.txt)|*.txt|全てのファイル (*.*)|*.*";
         private const string _msgUnknownDir = "サムネイルを表示するフォルダが存在しないか、画像ファイルがありません。";
+
+        // マウスホイールでの拡大/縮小の倍率計算(1ノッチ未満の回転量を溜めておくので、インスタンスを使い回す)
+        private readonly WheelZoom _wheelZoom = new WheelZoom();
 
         public MainWindow()
         {
@@ -157,6 +161,35 @@ namespace ImageViewer
                 .Where(file => _targetExts.Contains(Path.GetExtension(file)))
                 .ToArray();
             return files.Length != 0;
+        }
+
+        // xamlのScrollViewerのPreviewMouseWheelで定義したメソッド
+        // 画像の上でホイールを回すと、マウスの位置を中心に拡大/縮小する(倍率はSliderScaleと連動)。
+        // ScrollViewerは自分でホイールを縦スクロールに使ってしまうため、Preview(トンネル)イベントで先に処理して止める
+        private void ScrollViewerImage_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            e.Handled = true;
+
+            double oldScale = SliderScale.Value;
+            double newScale = _wheelZoom.Apply(oldScale, e.Delta);
+            if (Math.Abs(newScale - oldScale) < 1e-9)
+            {
+                // 上限・下限に達しているか、1ノッチ分たまっていない
+                return;
+            }
+
+            // 拡大/縮小する前のスクロール位置とマウス位置を覚えておく(倍率を変えるとスクロール範囲が変わり、位置が補正されるため)
+            Point mouse = e.GetPosition(ScrollViewerImage);
+            double oldHorizontalOffset = ScrollViewerImage.HorizontalOffset;
+            double oldVerticalOffset = ScrollViewerImage.VerticalOffset;
+            double ratio = newScale / oldScale;
+
+            SliderScale.Value = newScale;
+
+            // 新しい倍率でのスクロール範囲を確定させてから、マウスの下の点が動かないようにスクロールし直す
+            ScrollViewerImage.UpdateLayout();
+            ScrollViewerImage.ScrollToHorizontalOffset(WheelZoom.KeepPointUnderMouse(oldHorizontalOffset, mouse.X, ratio));
+            ScrollViewerImage.ScrollToVerticalOffset(WheelZoom.KeepPointUnderMouse(oldVerticalOffset, mouse.Y, ratio));
         }
     }
 }
