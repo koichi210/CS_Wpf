@@ -87,9 +87,10 @@ namespace TrimHtmlData
         {
             // キーはWinForms版(SaveRestore.RegisterItem)と同じにすること。
             // 「最初にヒットしたワードだけを抽出」はWinForms版でも保存対象外だったので、そのまま登録しない
-            // (足すとWinForms版との間で保存内容が食い違うため)
-            SaveRestore.RegisterCtrl("Common", "textBox_SourceList", textBox_SourceList);
-            SaveRestore.RegisterCtrl("Common", "textBox_DestList", textBox_DestList);
+            // (足すとWinForms版との間で保存内容が食い違うため)。
+            // 取得元(textBox_SourceList)・取得値(textBox_DestList)は毎回入れ替える「データ」で設定ではないので、
+            // プロファイルの保存・読み込みの対象にしない(WinForms版も同時に外した)。
+            // 以前のプロファイルに残っているこの2項目の値は、読み込み時に無視される
             SaveRestore.RegisterCtrl("Common", "textBox_SearchWord", textBox_SearchWord);
             SaveRestore.RegisterCtrl("Common", "textBox_DelimiterWord", textBox_DelimiterWord);
             SaveRestore.RegisterCtrl("Common", "textBox_TrimLineNum", textBox_TrimLineNum);
@@ -168,11 +169,14 @@ namespace TrimHtmlData
             Func<String, String> fetchHtmlSource = FetchHtmlSource;
 
             SetFetching(true);
+            progressBar_Fetch.Maximum = Math.Max(1, urls.Length);
+            progressBar_Fetch.Value = 0;
             for (int i = 0; i < urls.Length; i++)
             {
                 String url = urls[i];
                 destText.Append("◆").Append(url).Append(Environment.NewLine);
                 Title = _appName + " - 取得中 (" + (i + 1) + "/" + urls.Length + ")";
+                progressBar_Fetch.Value = i;
 
                 String htmlSource = "";
                 Boolean isFailed = false;
@@ -209,6 +213,8 @@ namespace TrimHtmlData
 
                 destText.Append(result);
             }
+            // 全件終わったらバーを満タンにする(次の実行の開始時に0へ戻す)
+            progressBar_Fetch.Value = progressBar_Fetch.Maximum;
             textBox_DestList.Text = destText.ToString();
             SetFetching(false);
 

@@ -113,6 +113,32 @@ namespace TrimHtmlData.Tests
         }
 
         [TestMethod]
+        public void 取得中はプログレスバーが進み終わると満タンになる()
+        {
+            StaRunner.Run(() =>
+            {
+                var window = new MainWindow(tempDirectory);
+                var progressDuringFetch = new List<double>();
+                // 取得はUIスレッドの外で呼ばれるので、バーの値はDispatcher経由で読む
+                window.FetchHtmlSource = url =>
+                {
+                    progressDuringFetch.Add((double)window.Dispatcher.Invoke(new Func<object>(() => window.progressBar_Fetch.Value)));
+                    return "<title>x</title>";
+                };
+                window.CopyToClipboard = text => true;
+
+                window.textBox_SourceList.Text = "https://a.example/\r\nhttps://b.example/\r\nhttps://c.example/";
+                window.textBox_SearchWord.Text = "<title>";
+
+                Execute(window);
+
+                CollectionAssert.AreEqual(new[] { 0.0, 1.0, 2.0 }, progressDuringFetch, "取得し終えたURLの数だけ進むはず");
+                Assert.AreEqual(3.0, window.progressBar_Fetch.Maximum);
+                Assert.AreEqual(window.progressBar_Fetch.Maximum, window.progressBar_Fetch.Value);
+            });
+        }
+
+        [TestMethod]
         public void 大文字小文字の区別と最初のヒットだけのチェックが反映される()
         {
             StaRunner.Run(() =>

@@ -67,8 +67,9 @@ namespace TrimHtmlData.Tests
                 var reader = new MainWindow(tempDirectory);
                 Assert.IsTrue(reader.SaveRestore.Load(path));
 
-                Assert.AreEqual("https://example.com/a\r\nhttps://example.com/b", reader.textBox_SourceList.Text);
-                Assert.AreEqual("◆https://example.com/a\r\n結果", reader.textBox_DestList.Text);
+                // 取得元・取得値はプロファイルに含めないので、読み込んだ側の欄は空のまま
+                Assert.AreEqual("", reader.textBox_SourceList.Text);
+                Assert.AreEqual("", reader.textBox_DestList.Text);
                 Assert.AreEqual("<title>", reader.textBox_SearchWord.Text);
                 Assert.AreEqual("</title>", reader.textBox_DelimiterWord.Text);
                 Assert.AreEqual("3", reader.textBox_TrimLineNum.Text);
@@ -84,11 +85,10 @@ namespace TrimHtmlData.Tests
                 var window = new MainWindow(tempDirectory);
                 var keys = window.SaveRestore.BuildGenericProfile().Values.Keys;
 
-                // 「最初にヒットしたワードだけを抽出」はWinForms版でも保存していない
+                // 「最初にヒットしたワードだけを抽出」はWinForms版でも保存していない。
+                // 取得元・取得値は設定ではなくデータなので、両版とも保存対象から外した
                 CollectionAssert.AreEquivalent(new[]
                 {
-                    "Common|textBox_SourceList",
-                    "Common|textBox_DestList",
                     "Common|textBox_SearchWord",
                     "Common|textBox_DelimiterWord",
                     "Common|textBox_TrimLineNum",
@@ -110,15 +110,16 @@ namespace TrimHtmlData.Tests
             StaRunner.Run(() =>
             {
                 var window = new MainWindow(tempDirectory);
-                window.textBox_DestList.Text = "消える値";
+                window.textBox_SourceList.Text = "入力中のURL";
+                window.textBox_DestList.Text = "前回の結果";
                 Assert.IsTrue(window.SaveRestore.Load(path));
 
-                Assert.AreEqual("https://example.com/\r\nhttps://example.org/", window.textBox_SourceList.Text);
+                // 以前のプロファイルに残っている取得元の値は無視され、入力中の取得元・取得値はそのまま残る
+                Assert.AreEqual("入力中のURL", window.textBox_SourceList.Text);
+                Assert.AreEqual("前回の結果", window.textBox_DestList.Text);
                 Assert.AreEqual("<h1>", window.textBox_SearchWord.Text);
                 Assert.AreEqual("2", window.textBox_TrimLineNum.Text);
                 Assert.AreEqual(true, window.checkBox_OrdinalCase.IsChecked);
-                // ファイルに無い項目は既定値(空)に戻る(WinForms版と同じ)
-                Assert.AreEqual("", window.textBox_DestList.Text);
             });
         }
 

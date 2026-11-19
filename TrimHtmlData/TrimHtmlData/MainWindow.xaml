@@ -17,6 +17,7 @@
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <!-- 取得元 / 取得値 -->
@@ -80,14 +81,19 @@
                         Click="button_Execute_Click" />
             </Grid>
 
+            <!-- 取得の進み具合(取得し終えたURLの数/全体のURLの数) -->
+            <ProgressBar Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" x:Name="progressBar_Fetch" Height="12" Margin="0,8,0,0"
+                         ToolTip="取得の進み具合(取得し終えたURLの数/全体のURLの数)"
+                         ToolTipService.ShowDuration="15000" />
+
             <!-- 設定の読み込み/保存 -->
-            <Grid Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,12,0,0">
+            <Grid Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,8,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <ComboBox Grid.Column="0" x:Name="comboBox_LoadSetting" Margin="0,0,6,0" VerticalAlignment="Center"
-                          ToolTip="選ぶと保存済みの設定を読み込み、各欄の内容が置き換わる"
+                          ToolTip="選ぶと保存済みの設定(検索文字・取得行数・大文字小文字の区別)を読み込む。取得元・取得値はプロファイルに含めないので変わらない"
                           ToolTipService.ShowDuration="15000"
                           SelectionChanged="comboBox_LoadSetting_SelectionChanged" />
                 <Button Grid.Column="1" x:Name="button_SaveSetting" Content="設定保存" Width="75" Height="23" Click="button_SaveSetting_Click" />
