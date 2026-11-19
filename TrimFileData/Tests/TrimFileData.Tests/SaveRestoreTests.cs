@@ -59,6 +59,7 @@ namespace TrimFileData.Tests
                 writer.textBox_SearchCommonWord.Text = "error";
                 writer.checkBox_FirstWordOnly.IsChecked = true;
                 writer.checkBox_OrdinalCase.IsChecked = true;
+                writer.checkBox_IgnoreWidth.IsChecked = true;
                 writer.textBox_SearchWordList.Text = "apple banana\r\ncherry";
                 writer.textBox_SearchResultList.Text = "◆apple banana\r\n結果";
                 Assert.IsTrue(writer.SaveRestore.Save(path));
@@ -70,6 +71,7 @@ namespace TrimFileData.Tests
                 Assert.AreEqual("error", reader.textBox_SearchCommonWord.Text);
                 Assert.AreEqual(true, reader.checkBox_FirstWordOnly.IsChecked);
                 Assert.AreEqual(true, reader.checkBox_OrdinalCase.IsChecked);
+                Assert.AreEqual(true, reader.checkBox_IgnoreWidth.IsChecked);
                 Assert.AreEqual("apple banana\r\ncherry", reader.textBox_SearchWordList.Text);
                 Assert.AreEqual("◆apple banana\r\n結果", reader.textBox_SearchResultList.Text);
             });
@@ -89,6 +91,7 @@ namespace TrimFileData.Tests
                     "Common|textBox_SearchCommonWord",
                     "Common|checkBox_FirstWordOnly",
                     "Common|checkBox_OrdinalCase",
+                    "Common|checkBox_IgnoreWidth",
                     "Common|textBox_SearchWordList",
                     "Common|textBox_SearchResultList",
                 }, new System.Collections.Generic.List<string>(keys));

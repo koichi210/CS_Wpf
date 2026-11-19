@@ -78,6 +78,7 @@ namespace TrimFileData
             SaveRestore.RegisterCtrl("Common", "textBox_SearchCommonWord", textBox_SearchCommonWord, legacyAttrValue: "textBox_SerchCommonWord");
             SaveRestore.RegisterCtrl("Common", "checkBox_FirstWordOnly", checkBox_FirstWordOnly);
             SaveRestore.RegisterCtrl("Common", "checkBox_OrdinalCase", checkBox_OrdinalCase);
+            SaveRestore.RegisterCtrl("Common", "checkBox_IgnoreWidth", checkBox_IgnoreWidth);
             SaveRestore.RegisterCtrl("Common", "textBox_SearchWordList", textBox_SearchWordList, legacyAttrValue: "textBox_SerchWordList");
             SaveRestore.RegisterCtrl("Common", "textBox_SearchResultList", textBox_SearchResultList, legacyAttrValue: "textBox_SerchResultList");
         }
@@ -109,7 +110,8 @@ namespace TrimFileData
 
             // 検索結果をコントロールにセット
             textBox_SearchResultList.Text = Logic.GetSearchData(searchWordLines, referLines,
-                checkBox_OrdinalCase.IsChecked == true, checkBox_FirstWordOnly.IsChecked == true, textBox_SearchCommonWord.Text);
+                checkBox_OrdinalCase.IsChecked == true, checkBox_FirstWordOnly.IsChecked == true, textBox_SearchCommonWord.Text,
+                checkBox_IgnoreWidth.IsChecked == true);
             CopyToClipboard(textBox_SearchResultList.Text);
             return true;
         }
