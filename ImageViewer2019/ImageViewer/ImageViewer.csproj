@@ -62,9 +62,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ImageConverter.cs" />
+    <Compile Include="FileSorter.cs" />
+    <Compile Include="GammaCorrection.cs" />
+    <Compile Include="ImageFiles.cs" />
+    <Compile Include="ShellThumbnail.cs" />
     <Compile Include="Thumbnail.cs" />
     <Compile Include="ThumbnailSizeConverter.cs" />
+    <Compile Include="VideoFrameGrabber.cs" />
+    <Compile Include="VideoPosition.cs" />
     <Compile Include="WheelZoom.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

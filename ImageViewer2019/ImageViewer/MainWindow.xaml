@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ImageViewer"
         mc:Ignorable="d"
-        Title="ImageViewer" Height="520" Width="880"
+        Title="ImageViewer" Height="600" Width="960"
         Loaded="WindowLoaded"
         Closing="WindowClosing">
 
@@ -53,7 +53,6 @@
         </Style>
 
         <!--Converterメソッド-->
-        <local:ImageConverter x:Key="ImageConverter"/>
         <local:ThumbnailSizeNameConverter x:Key="ThumbnailSizeNameConverter"/>
         <local:ThumbnailSizeWidthConverter x:Key="ThumbnailSizeWidthConverter"/>
         <local:ThumbnailSizeHeightConverter x:Key="ThumbnailSizeHeightConverter"/>
@@ -65,16 +64,23 @@
         <!--上の操作欄。StackPanel(横並び)だと子のDockPanel.Dockが効かず、「ファイル」欄がウィンドウ右端に
         吸着しなかったので、DockPanelにして左の欄を順に詰め、最後の「ファイル」欄で残りの幅を右端まで埋める-->
         <DockPanel DockPanel.Dock="Top" LastChildFill="True">
-            <GroupBox Header="操作" Width="50" DockPanel.Dock="Left">
-                <StackPanel Orientation="Vertical" Style="{StaticResource StackPanelInGroupBoxTemplate}" >
-                    <Button Name="ButtonOpenDialog" ToolTip="エクスプローラー形式のダイアログ(パスの貼り付け可)でフォルダを選び、直下の画像(.jpg .bmp .png .tiff .gif)をサムネイル表示する" Content="開く" Click="ButtonOpenDialog_Click"/>
-                    <Button Name="ButtonFormOpenDialog" ToolTip="ツリー形式のダイアログでフォルダを選び、直下の画像(.jpg .bmp .png .tiff .gif)をサムネイル表示する" Content="開く" Click="ButtonFormOpenDialog_Click"/>
+            <!--以前は「開く」ボタンが2つ(エクスプローラー形式/ツリー形式)並んでいて見分けがつかなかったので、
+            ボタンは1つにして、どちらのダイアログで開くかをラジオボタンで選ぶ-->
+            <GroupBox Header="開く" Width="130" DockPanel.Dock="Left">
+                <StackPanel Orientation="Vertical" Margin="2,2,0,0">
+                    <RadioButton Name="RadioOpenExplorer" Content="エクスプローラー形式" IsChecked="True" GroupName="OpenStyle"
+                                 ToolTip="エクスプローラーと同じ形のダイアログでフォルダを選ぶ(上のアドレス欄にパスを貼り付けられる)"/>
+                    <RadioButton Name="RadioOpenTree" Content="ツリー形式" GroupName="OpenStyle" Margin="0,2,0,0"
+                                 ToolTip="フォルダの木構造を掘っていくダイアログでフォルダを選ぶ"/>
+                    <Button Name="ButtonOpenDialog" Content="開く" Width="60" Margin="0,4,0,0" HorizontalAlignment="Left"
+                            ToolTip="上で選んだ形のダイアログでフォルダを選び、直下の画像(.jpg .bmp .png .tiff .gif)と動画(.mp4 .mov .avi .wmv など)をサムネイル表示する"
+                            Click="ButtonOpenDialog_Click"/>
                 </StackPanel>
             </GroupBox>
             <GroupBox Header="サムネイルのサイズ" DockPanel.Dock="Left" >
                 <StackPanel Style="{StaticResource StackPanelInGroupBoxTemplate}" >
                     <TextBlock Text="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumbnailSizeNameConverter}}"/>
-                    <Slider Name="SliderThumbnail" ToolTip="サムネイルの大きさを3段階で切り替える(Small 40×30 / Middle 80×60 / Large 120×90)" 
+                    <Slider Name="SliderThumbnail" ToolTip="サムネイルの大きさを3段階で切り替える(Small 40×30 / Middle 80×60 / Large 120×90)"
                         Minimum="1" Maximum="3" TickFrequency="1" SmallChange="1" LargeChange="1" Value="2"
                         TickPlacement="BottomRight"/>
                 </StackPanel>
@@ -95,6 +101,25 @@
                         Minimum="0" Maximum="360" TickFrequency="1" SmallChange="1" LargeChange="90" Value="0"/>
                 </StackPanel>
             </GroupBox>
+            <GroupBox Header="ガンマ補正" DockPanel.Dock="Left" Width="150">
+                <StackPanel Style="{StaticResource StackPanelInGroupBoxTemplate}" >
+                    <TextBlock Text="{Binding ElementName=SliderGamma, Path=Value, StringFormat={}{0:0.0}:}" Style="{StaticResource TextBlockTemplate}" />
+                    <Slider Name="SliderGamma" Width="70"
+                        ToolTip="下に表示中の画像の明るさ(ガンマ)。1.0がそのまま、大きくすると中間の暗い所が明るく、小さくすると暗くなる(0.2〜3.0)。ダブルクリックで1.0に戻す"
+                        Minimum="0.2" Maximum="3.0" TickFrequency="0.1" SmallChange="0.1" LargeChange="0.5" Value="1.0"
+                        ValueChanged="SliderGamma_ValueChanged" MouseDoubleClick="SliderGamma_MouseDoubleClick"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="並び順" DockPanel.Dock="Left" Width="110">
+                <StackPanel Orientation="Vertical" Margin="2,4,0,0">
+                    <ComboBox Name="ComboSortOrder" Width="96" HorizontalAlignment="Left" SelectedIndex="0"
+                              ToolTip="サムネイルの並び順(名前順はエクスプローラーと同じく数字を数として比べる)"
+                              SelectionChanged="SortOrder_Changed"/>
+                    <CheckBox Name="CheckSortDescending" Content="降順" Margin="0,4,0,0"
+                              ToolTip="オンなら逆順(Z→A、大きい順、新しい順)に並べる"
+                              Checked="SortOrder_Changed" Unchecked="SortOrder_Changed"/>
+                </StackPanel>
+            </GroupBox>
 
             <!--最後の子なので残りの幅いっぱいに広がり、右端がウィンドウ右端に追従する(Width="Auto"でStyleの幅120を打ち消す)-->
             <GroupBox Header="ファイル" Width="Auto" MinWidth="200" DockPanel.Dock="Right">
@@ -106,7 +131,43 @@
             </GroupBox>
         </DockPanel>
 
-        <ListBox x:Name="ListBoxThumbnail" DockPanel.Dock="Top" ItemsSource="{Binding}">
+        <!--動画のコマの指定と、表示中の画像の保存-->
+        <DockPanel DockPanel.Dock="Top" LastChildFill="True" Margin="2,2,2,0">
+            <GroupBox Header="動画のコマ" DockPanel.Dock="Left" Width="Auto" Height="Auto">
+                <StackPanel Orientation="Horizontal" Margin="2">
+                    <TextBox Name="TextVideoPosition" Width="70" Text="0" VerticalAlignment="Center"
+                             ToolTip="表示する位置。「秒」なら 12.5 や 1:23.5(分:秒)、「コマ」なら1始まりのコマ番号(1が先頭)。Enterキーで表示"
+                             KeyDown="TextVideoPosition_KeyDown"/>
+                    <RadioButton Name="RadioVideoSeconds" Content="秒" IsChecked="True" GroupName="VideoUnit" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                    <RadioButton Name="RadioVideoFrame" Content="コマ" GroupName="VideoUnit" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="fps:" Margin="10,0,2,0" VerticalAlignment="Center"/>
+                    <TextBox Name="TextVideoFps" Width="45" Text="30" VerticalAlignment="Center"
+                             ToolTip="「コマ」で指定したときに時間へ直すための1秒あたりのコマ数(例: 29.97)。PATHにffmpeg.exeがあるときはffmpegがコマ番号どおりに取り出すので使わない"/>
+                    <Button Name="ButtonShowFrame" Content="コマを表示" Width="75" Margin="8,0,0,0"
+                            ToolTip="一覧で選んでいる動画の、指定した位置のコマを下に表示する"
+                            Click="ButtonShowFrame_Click"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="保存" DockPanel.Dock="Left" Width="Auto" Height="Auto">
+                <Button Name="ButtonSavePng" Content="PNGで保存" Width="80" Margin="2"
+                        ToolTip="下に表示中の画像(動画のコマ・ガンマ補正の結果を含む。拡大/縮小・回転は含まない)をPNGファイルに保存する"
+                        Click="ButtonSavePng_Click"/>
+            </GroupBox>
+            <TextBlock Name="TextStatus" VerticalAlignment="Center" Margin="8,6,0,0" TextWrapping="Wrap"/>
+        </DockPanel>
+
+        <!--読み込みの進み具合(サムネイルを作り終えた数/全体の数)-->
+        <StatusBar DockPanel.Dock="Bottom">
+            <StatusBarItem>
+                <ProgressBar Name="ProgressLoad" Width="200" Height="14" Minimum="0" Maximum="1" Value="0"
+                             ToolTip="サムネイルの読み込みの進み具合"/>
+            </StatusBarItem>
+            <StatusBarItem>
+                <TextBlock Name="TextProgress"/>
+            </StatusBarItem>
+        </StatusBar>
+
+        <ListBox x:Name="ListBoxThumbnail" DockPanel.Dock="Top" ItemsSource="{Binding}" SelectionChanged="ListBoxThumbnail_SelectionChanged">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>
                     <!--サムネイルを横に並べる-->
@@ -118,9 +179,10 @@
                 <DataTemplate>
 
                     <!--Memo：WrapPanelのOrientationがVerticalの場合、StackPanelのOrientationをHorizontalにしないと、ファイル名が表示されない-->
+                    <!--サムネイル画像は読み込み用のスレッドが順に作ってThumbnailImageへ入れる(作り終わるまでは空欄)-->
                     <StackPanel>
                         <Image Stretch="Fill"
-                               Source="{Binding FileFullPath, Converter={StaticResource ImageConverter}}"
+                               Source="{Binding ThumbnailImage}"
                                Width="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumbnailSizeWidthConverter}}"
                                Height="{Binding ElementName=SliderThumbnail, Path=Value, Converter={StaticResource ThumbnailSizeHeightConverter}}"/>
                         <TextBlock Text="{Binding FileName}"/>
@@ -133,8 +195,9 @@
         <!--画像の上でホイールを回すと、縦スクロールの代わりにマウス位置を中心に拡大/縮小する(PreviewMouseWheelで先取りする)-->
         <ScrollViewer Name="ScrollViewerImage" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
                       PreviewMouseWheel="ScrollViewerImage_PreviewMouseWheel">
-            <!--「Stretch="None"」にしないとScalingが効かない-->
-            <Image Name="ImageView" Stretch="None" Source="{Binding ElementName=ListBoxThumbnail, Path=SelectedItem.FileFullPath}" >
+            <!--「Stretch="None"」にしないとScalingが効かない。
+            表示する画像は選択に応じてコードから入れる(画像ファイル、または動画の指定位置のコマに、ガンマ補正を掛けたもの)-->
+            <Image Name="ImageView" Stretch="None">
                 <Image.LayoutTransform>
                     <TransformGroup>
                         <RotateTransform Angle="{Binding ElementName=SliderAngle, Path=Value}"/>
